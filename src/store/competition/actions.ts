@@ -1,6 +1,7 @@
 import * as tcompetition from './types'
 import { Cid , Page} from '../commonTypes'
 import api from '../../api'
+import {API_COMPE_DETAIL,API_COMPE_LIST} from '../../api'
 import { Dispatch } from 'redux'
 import { SetAppResult,SetProcessing } from '../system/actions'
 
@@ -21,7 +22,7 @@ export const ApicompetitionListSuccess = (list:tcompetition.CompeList):tcompetit
 export const GetDetail = (cid:Cid) => {
   return async (dispatch:Dispatch) => {
     dispatch(SetProcessing({done:true}))
-    const res = await api.get('/api/competition/',{params:{cid:cid}})
+    const res = await api.get(API_COMPE_DETAIL,{params:{cid:cid}})
     dispatch(SetProcessing({done:false}))
     if (res.status == 200) {
       return dispatch(ApiCometitionDetailSuccess(res.data))
@@ -34,7 +35,7 @@ export const GetDetail = (cid:Cid) => {
 export const PostDetail = (detail:tcompetition.Detail) => {
   return async (dispatch:Dispatch) => {
     dispatch(SetProcessing({done:true}))
-    const res = await api.post("/api/competiton/",detail)
+    const res = await api.post(API_COMPE_DETAIL,detail)
     dispatch(SetProcessing({done:false}))
     if (res.status == 200) {
       dispatch(ApiCometitionDetailSuccess(res.data))
@@ -43,10 +44,31 @@ export const PostDetail = (detail:tcompetition.Detail) => {
   }
 }
 
+export const UpdateDetail = (detail:tcompetition.Detail) => {
+  return async (dispatch:Dispatch) => {
+    dispatch(SetProcessing({done:true}))
+    const res = await api.put(API_COMPE_DETAIL,detail)
+    dispatch(SetProcessing({done:false}))
+    if (res.status == 200) {
+      dispatch(ApicompetitionListSuccess(res.data))
+    }
+    return dispatch(SetAppResult({status:res.status,cause:res.statusText}))
+  }
+}
+
+export const DeleteDetail = (cid:Cid) => {
+  return async (dispatch:Dispatch) => {
+    dispatch(SetProcessing({done:true}))
+    const res = await api.delete(API_COMPE_DETAIL,{data:cid})
+    dispatch(SetProcessing({done:false}))
+    return dispatch(SetAppResult({status:res.status,cause:res.statusText}))
+  }
+}
+
 export const GetList = (page:Page) => {
   return async (dispatch:Dispatch) => {
     dispatch(SetProcessing({done:true}))
-    const res = await api.get('/api/competition/list/',{ params: { p:page}})
+    const res = await api.get(API_COMPE_LIST,{ params: { p:page}})
     dispatch(SetProcessing({done:false}))
     if (res.status == 200) {
       return dispatch(ApicompetitionListSuccess(res.data))

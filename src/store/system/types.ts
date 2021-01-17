@@ -2,10 +2,14 @@ import { Uid } from '../commonTypes'
 import { AxiosResponse, AxiosError} from 'axios'
 
 export interface Pref {
-  pid: number,
+  pref_id: number,
   name: string,
-  address: string
 }
+
+export interface PrefList {
+  list:Pref[]
+}
+
 
 export interface Session {
   uid: Uid, 
@@ -21,6 +25,7 @@ export interface AppResult {
 } 
 
 export const GET_PREF = "GET_PREF"
+export const SET_PREF = "SET_PREF"
 export const GET_SESSION = "GET_SESSION"
 export const API_SUCCESS = "API_SUCCESS"
 export const API_ERROR = "API_ERROR"
@@ -29,7 +34,7 @@ export const SET_APPRESULT = "SET_APPREUSLT"
 
 export interface GetPref {
   type: typeof GET_PREF,
-  payload: Pref
+  payload: PrefList
 }
 
 export interface GetSession {
@@ -47,4 +52,4 @@ export interface SetAppResult {
   payload: AppResult 
 } 
 
-export type SystemAction = GetSession | GetPref | SetProcessing | SetAppResult
+export type SystemAction = GetSession | GetPref | SetProcessing | SetAppResult | SET_PREF

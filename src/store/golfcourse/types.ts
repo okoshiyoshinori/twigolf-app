@@ -1,4 +1,4 @@
-export interface CourceDetail {
+export type CourceDetail = {
   cource_id: number,
   pref_id: number,
   name: string,
@@ -6,11 +6,11 @@ export interface CourceDetail {
   other: string,
 }
 
-export interface CourceList {
+export type CourceList = {
   list: CourceDetail[],
 }
 
-export interface Key {
+export type Key = {
   pref_id: number,
   word: string,
 }
@@ -19,7 +19,7 @@ export const GET_COURCELIST = "GET_COURCELIST"
 
 export interface GetCourceList {
   type: typeof GET_COURCELIST,
-  payload: Key,
+  payload: CourceList,
 }
 
 export type CorceAction = GetCourceList

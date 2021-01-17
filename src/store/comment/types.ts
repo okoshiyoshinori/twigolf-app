@@ -2,7 +2,7 @@ import { UserInfo } from '../user/types'
 import { Cid , Page} from '../commonTypes'
 
 
-export interface Comment {
+export type Comment = {
   mid: number,
   compe_id: Cid,
   user: UserInfo,
@@ -10,21 +10,25 @@ export interface Comment {
   update: string,
 }
 
-export interface Comments {
-  list: Comment[]
+export type Comments = {
+  list: Comment[],
+  page: Page
 }
 
-export const GET_COMMENTS = "GET_COMMENTS"
+export const API_COMMENTS_SUCCESS = "API_COMMENTS_SUCCESS"
+export const API_COMMENT_SUCCESS = "API_COMMENT_SUCCESS"
 
-export interface GetComments {
-  type: typeof GET_COMMENTS,
-  payload: {
-    compe_id: Cid,
-    page: Page
-  } 
+export type ApiCommentsSuccess = {
+  type: typeof API_COMMENTS_SUCCESS,
+  payload: Comments
 } 
 
-export type CommentAction = GetComments
+export type ApiCommentSuccess = {
+  type: typeof API_COMMENT_SUCCESS,
+  payload:Comment
+}
+
+export type CommentAction = ApiCommentsSuccess | ApiCommentSuccess
 
 
 
