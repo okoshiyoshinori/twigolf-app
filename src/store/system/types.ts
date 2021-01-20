@@ -32,8 +32,8 @@ export const API_ERROR = "API_ERROR"
 export const SET_PROCESSING = "SET_PROCESSING"
 export const SET_APPRESULT = "SET_APPREUSLT"
 
-export interface GetPref {
-  type: typeof GET_PREF,
+export interface SetPref {
+  type: typeof SET_PREF,
   payload: PrefList
 }
 
@@ -52,4 +52,4 @@ export interface SetAppResult {
   payload: AppResult 
 } 
 
-export type SystemAction = GetSession | GetPref | SetProcessing | SetAppResult | SET_PREF
+export type SystemAction = GetSession | SetPref | SetProcessing | SetAppResult
