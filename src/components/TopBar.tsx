@@ -20,7 +20,7 @@ import NotificationsIcon from '@material-ui/icons/Notifications'
 import {makeStyles,Theme,createStyles,withStyles,StyleRules} from '@material-ui/core/styles'
 import React from 'react'
 
-const drawWidth = 240
+const drawWidth = 0 
 
 const styles = (theme:Theme) => createStyles({
   root: {
@@ -43,7 +43,12 @@ const styles = (theme:Theme) => createStyles({
     [theme.breakpoints.up("sm")]: {
       width: `calc(100% - ${drawWidth}px)`,
       marginLeft: drawWidth
-    }
+    },
+    backgroundColor:theme.palette.primary.main,
+    boxShadow:"0 0 0 0",
+    borderColor:theme.palette.divider,
+    borderBottomWidth:"1px",
+    borderBottomStyle:"solid"
   },
   menuButton: {
     marginRight: theme.spacing(2),
@@ -112,7 +117,7 @@ class TopBar extends React.Component<Props,State> {
     )
     return (
     <div className={classes.root}>
-      <AppBar position="fixed" className={classes.appBar} color='primary'>
+      <AppBar position="fixed" className={classes.appBar} >
         <Toolbar>
           <IconButton edge="start" color="inherit" aria-label="menu"
             onClick ={() => this.handleMobileToggle()}
@@ -121,7 +126,7 @@ class TopBar extends React.Component<Props,State> {
             <MenuIcon />
           </IconButton>
           <Typography variant="h5" className={classes.grow} >
-            News
+            ツイゴル 
           </Typography>
           <IconButton aria-label="show 17 new notifications" color="inherit">
               <Badge badgeContent={1} color="error">
@@ -133,6 +138,7 @@ class TopBar extends React.Component<Props,State> {
           </IconButton>
         </Toolbar>
       </AppBar>
+      { /*
       <nav className={classes.drawer}>
         <Hidden smUp implementation="css">
           <Drawer 
@@ -163,6 +169,7 @@ class TopBar extends React.Component<Props,State> {
           </Drawer>
         </Hidden>
       </nav>
+      */}
     </div>
     )
   }

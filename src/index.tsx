@@ -3,10 +3,16 @@ import ReactDOM from 'react-dom';
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
+import { BrowserRouter as Router,Route} from  'react-router-dom'
+import Top from './page/top'
 
 ReactDOM.render(
   <React.StrictMode>
-    <App />
+   <Router>
+    <App> 
+      <Route exact path="/" component={Top}></Route>
+    </App>
+   </Router>
   </React.StrictMode>,
   document.getElementById('root')
 );
