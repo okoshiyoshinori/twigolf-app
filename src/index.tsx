@@ -5,12 +5,13 @@ import App from './App';
 import reportWebVitals from './reportWebVitals';
 import { BrowserRouter as Router,Route} from  'react-router-dom'
 import Top from './page/top'
-
+import Home from './page/home'
 ReactDOM.render(
   <React.StrictMode>
    <Router>
     <App> 
       <Route exact path="/" component={Top}></Route>
+      <Route path="/home" component={Home}></Route>
     </App>
    </Router>
   </React.StrictMode>,

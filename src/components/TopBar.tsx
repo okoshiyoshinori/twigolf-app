@@ -44,11 +44,8 @@ const styles = (theme:Theme) => createStyles({
       width: `calc(100% - ${drawWidth}px)`,
       marginLeft: drawWidth
     },
-    backgroundColor:theme.palette.primary.main,
-    boxShadow:"0 0 0 0",
-    borderColor:theme.palette.divider,
-    borderBottomWidth:"1px",
-    borderBottomStyle:"solid"
+    backgroundColor:theme.palette.common.white,
+    boxShadow: "0 0 0 0"
   },
   menuButton: {
     marginRight: theme.spacing(2),
@@ -125,10 +122,10 @@ class TopBar extends React.Component<Props,State> {
           >
             <MenuIcon />
           </IconButton>
-          <Typography variant="h5" className={classes.grow} >
-            ツイゴル 
+          <Typography  className={classes.grow} >
+            <img src={`${process.env.PUBLIC_URL}/twi_logo.jpeg`} />
           </Typography>
-          <IconButton aria-label="show 17 new notifications" color="inherit">
+          <IconButton aria-label="notifications" color="inherit">
               <Badge badgeContent={1} color="error">
                 <NotificationsIcon />
               </Badge>

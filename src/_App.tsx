@@ -11,14 +11,14 @@ import Paper from '@material-ui/core/Paper'
 import { createMuiTheme,responsiveFontSizes} from '@material-ui/core/styles'
 import { ThemeProvider } from '@material-ui/styles'
 import { Shadows } from '@material-ui/core/styles/shadows'
-import {createStyles,Theme,withStyles,WithStyles} from '@material-ui/core/styles'
+import {createStyles,Theme,withStyles} from '@material-ui/core/styles'
 import Divider from '@material-ui/core/Divider'
 import AccountBoxIcon from '@material-ui/icons/AccountBox'
 import TopBar from './components/TopBar'
 import EmojiPeopleIcon from '@material-ui/icons/EmojiPeople'
 import SearchIcon from '@material-ui/icons/Search'
 import DataUsageIcon from '@material-ui/icons/DataUsage'
-import {NavLink,withRouter,RouteComponentProps} from 'react-router-dom'
+import {NavLink} from 'react-router-dom'
 
 let theme = createMuiTheme({
   typography: {
@@ -38,36 +38,31 @@ let theme = createMuiTheme({
     },
     h1: {
       fontWeight:700,
-      fontSize:"1.8rm",
-      color:"#2a2b52"
+      fontSize:"1.25rem",
     },
     h2: {
       fontWeight:700,
       fontSize:"1rem"
-    },
-    h3: {
-      fontWeight:600,
-      fontSize:"0.8rem"
     }
   },
   palette: {
     primary: {
-      light:"#6ec6ff",
-      main:"#2196f3",
-      dark:"#0069c0",
-      contrastText:"#000"
+      light:"#182f4d",
+      main:"#142840",
+      dark:"#000010",
+      contrastText:"#fff"
     },
     secondary: {
-      light: '#aee571',
-      main:"#7cb342",
-      dark: "#4b830d",
-      contrastText:"#000",
+      light: '#0d47a1',
+      main:"#23b8fb",
+      dark: "#004079",
+      contrastText:"#fff",
     },
     text: {
-      primary: "#000",
-      secondary:"#fafafa"
+      primary: "#fff",
+      secondary:"#fff"
     },
-    divider: "#dedede",
+    divider: "#2b3b56",
     error:{
       main:"#f44336"
     },
@@ -81,31 +76,31 @@ let theme = createMuiTheme({
       main: "#4caf50"
     },
     background: {
-     default: "#edf2f7",
-     paper: "#fafafc"
+     default: "#142840"
     },
     type: 'light',
   },
+  /*
+  shadows: Array(25).fill("none") as Shadows,
+     props: {
+        MuiTextField: {
+            variant: "outlined"
+        }
+  },
+  */
   mixins: {
     toolbar: {
-      minHeight:60
+      minHeight: 50
     }
   },
-  direction: 'ltr',
-  overrides: {
-    MuiListItem: {
-      root: {
-        "&$selected": { 
-          backgroundColor:"#6ec6ff",
-          color: "#fff"
-        }
-      }
-    }
-  }
+  direction: 'ltr'
 })
 theme = responsiveFontSizes(theme)
 type State = {}
-interface Props extends RouteComponentProps,WithStyles<typeof styles>{}
+type Props = {
+  classes:any
+}
+
 const styles = (them:Theme) => createStyles({
   content: {
     flexGrow:1,
@@ -165,11 +160,52 @@ class App extends React.Component<Props,State> {
         <ThemeProvider theme={theme}>
         <CssBaseLine />
           <TopBar/>
+          <Container maxWidth={"md"} style={{minHeight: '100vh'}}>
+            <div className={classes.toolbar}/>
+            <Grid container>
+              <Grid item xs={12} sm={8} className={classes.main}  >
                 {this.props.children}
+              </Grid>
+              <Grid item xs={12} sm={4} className={classes.right}>
+                <Card className={classes.menu}>
+                  <CardHeader className={classes.menuHeader}
+                  titleTypographyProps={{variant:'h1'}}
+                  title="メニュー" >
+                  </CardHeader>
+                  <CardContent className={classes.menuContents}>
+                    <List>
+                      <NavLink to="/" style={{textDecoration: 'none', color: 'unset'}}>
+                      <ListItem button key={"a"} >
+                        <ListItemIcon><AccountBoxIcon className={classes.icon} /></ListItemIcon>
+                        <ListItemText primary={<Typography style={{fontWeight:'bold'}}>マイページ</Typography>} />
+                      </ListItem>
+                      </NavLink>
+                      <NavLink to="/all" style={{textDecoration: 'none', color: 'unset'}}>
+                      <ListItem button key={"b"}>
+                        <ListItemIcon><EmojiPeopleIcon className={classes.icon} /></ListItemIcon>
+                        <ListItemText primary={<Typography style={{fontWeight:'bold'}}>みんなのイベント</Typography>} />
+                      </ListItem>
+                      </NavLink>
+                      <NavLink to="/search" style={{textDecoration: 'none', color: 'unset'}}>
+                      <ListItem button key={"c"}>
+                        <ListItemIcon><SearchIcon className={classes.icon} /></ListItemIcon>
+                        <ListItemText primary={<Typography style={{fontWeight:'bold'}}>検索</Typography>} />
+                      </ListItem>
+                      </NavLink>
+                      <ListItem button key={"d"}>
+                        <ListItemIcon><DataUsageIcon className={classes.icon} /></ListItemIcon>
+                        <ListItemText primary={<Typography style={{fontWeight:'bold'}}>使い方</Typography>} />
+                      </ListItem>
+                    </List>
+                  </CardContent>
+                </Card>
+              </Grid>
+            </Grid>
+          </Container>
         </ThemeProvider>
       </React.Fragment>
     )
   }
 }
 
-export default withRouter(withStyles(styles,{withTheme:true})(App))
+export default withStyles(styles,{withTheme:true})(App)

@@ -1,7 +1,7 @@
 import React from 'react'
 import {OverView} from '../store/competition/types'
 import {createStyles,Theme,withStyles} from '@material-ui/core/styles/'
-import {Card,CardHeader,CardContent,Avatar,Typography} from '@material-ui/core/'
+import {Card,CardMedia,CardHeader,CardContent,Avatar,Typography,Divider} from '@material-ui/core/'
 import { red } from '@material-ui/core/colors'
 
 type Props = {
@@ -12,19 +12,29 @@ type State = {}
 
 const styles = (theme:Theme) => createStyles({
   root: {
-    backgroundColor: theme.palette.common.white,
-    boxShadow: "0 0 0 0",
-    borderColor: theme.palette.divider,
+    backgroundColor: theme.palette.background.default,
+    borderRadius: "10px",
+    //boxShadow: "0 0 0 0",
+    [theme.breakpoints.up("sm")]: {
+      maxWidth:"350px"
+    }
   },
   header: {
     color: theme.palette.common.black,
-    fontSize:45,
+    backgroundColor: theme.palette.common.white,
   },
   contents: {
-    color: theme.palette.common.black
+    color: theme.palette.common.black,
+    backgroundColor: theme.palette.common.white
   },
   avatar: {
-    backgroundColor: red[500] 
+    backgroundColor: red[500],
+    width: theme.spacing(3),
+    height: theme.spacing(3)
+  },
+  media: {
+    height: 0,
+    paddingTop: '56.25%', // 16:9
   }
 })
 
@@ -35,22 +45,24 @@ class EventCard extends React.Component<Props,State> {
   render() {
     const {classes} = this.props
     return (
-      <Card className={classes.root}>
-        <CardHeader className={classes.header} avatar={
-          <Avatar aria-label="event" className={classes.avatar}>
-            R
-          </Avatar>
-        }
-        titleTypographyProps={{variant:'h6' }}
-        title="トマコマ＠苫小牧ボードゲーム会 2021.1.24"
-        subheader="@nexx"
-        />
-              <CardContent className={classes.contents}>
-        <Typography variant="body2" component="p">
-        今日、WordPressウェブサイトの多くでは、イタリック体が全くなく、2種類のフォントウェイトしか使用されません。Google Fontsを自分で埋め込んでいる場合は、Google Fontsの「カスタマイズ」タブで使用するウェイトを選択できます：
+      <Card className={classes.root} elevation={1}>
+            <CardContent className={classes.contents}>
+        <Typography variant="h2" component="h2">
+          ポーカー会PLO開催! 
+        </Typography>
+        <Typography variant="body2" component="p" style={{marginTop:"10px"}}>
+        Lizards are a widespread group of squamate reptiles, with over 6,000 species, ranging
+            across all continents except Antarctica
         </Typography>
       </CardContent>
-      </Card>
+        <CardHeader className={classes.header} avatar={
+          <Avatar src={process.env.PUBLIC_URL + "/nanahara.jpg"} aria-label="event" className={classes.avatar}>
+          </Avatar>
+        }
+        title="なな原くん@nexx"
+        subheader={<Typography variant="caption">1日前</Typography>}
+        />
+     </Card>
     )
   }
 }
