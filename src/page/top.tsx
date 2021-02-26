@@ -13,6 +13,11 @@ const styles = (theme:Theme) => createStyles({
   root: {
     paddingTop: "50px"
   },
+    button: {
+    marginTop: theme.spacing(3),
+    color: theme.palette.common.white,
+    fontWeight:700
+  },
   main: {
     [theme.breakpoints.up("sm")]: {
       borderRightColor: theme.palette.divider,
@@ -50,7 +55,7 @@ class Top extends React.Component<Props,State> {
     super(props)
   }
   linkTo() {
-    this.props.history.push("/home/all")
+    this.props.history.push("/events")
   }
   render() {
     const {classes} = this.props
@@ -69,8 +74,8 @@ class Top extends React.Component<Props,State> {
           </Typography>
           </Grid>
                   <div className={classes.sug}>
-          <Button size="large" variant="outlined"  color="primary" startIcon={<TwitterIcon/>}>ログイン</Button>
-          <Button size="large" variant="outlined" onClick={()=>{this.linkTo()}} >続きを見る</Button>
+          <Button size="large" className={classes.button} variant="contained"  color="primary" startIcon={<TwitterIcon/>}>ログイン</Button>
+          <Button size="large"  variant="contained" onClick={()=>{this.linkTo()}} >続きを見る</Button>
         </div>
           <Grid container style={{marginTop:"20px"}} spacing={2}>
             {[1,2,3,4,5,6].map((i) => (

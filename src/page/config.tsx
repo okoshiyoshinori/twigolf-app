@@ -11,7 +11,7 @@ const styles = (theme:Theme) => createStyles({
   }
 }) 
 
-class Guid extends React.Component<Props,State> {
+class Config extends React.Component<Props,State> {
   constructor(props:Props) {
     super(props)
   }
@@ -20,7 +20,7 @@ class Guid extends React.Component<Props,State> {
       <Grid container spacing={2}>
           <Grid item xs={12} sm={12}>
             <Typography variant="h1">
-              使い方ガイド
+              設定
             </Typography>
           </Grid>
       </Grid>
@@ -28,4 +28,4 @@ class Guid extends React.Component<Props,State> {
   }
 }
 
-export default withRouter(withStyles(styles,{withTheme:true})(Guid))
+export default withRouter(withStyles(styles,{withTheme:true})(Config))

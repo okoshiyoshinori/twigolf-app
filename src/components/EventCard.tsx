@@ -1,13 +1,13 @@
 import React from 'react'
 import {OverView} from '../store/competition/types'
-import {createStyles,Theme,withStyles} from '@material-ui/core/styles/'
-import {Card,CardMedia,CardHeader,CardContent,Avatar,Typography,Divider} from '@material-ui/core/'
+import {createStyles,Theme,withStyles,WithStyles} from '@material-ui/core/styles/'
+import {Card,CardActionArea,CardMedia,CardHeader,CardContent,Avatar,Typography,Divider} from '@material-ui/core/'
 import { red } from '@material-ui/core/colors'
+import {withRouter,RouteComponentProps} from 'react-router-dom'
 
-type Props = {
-//  data: OverView 
-  classes: any
-}
+interface Props extends RouteComponentProps,WithStyles<typeof styles>{}
+
+
 type State = {}
 
 const styles = (theme:Theme) => createStyles({
@@ -45,9 +45,10 @@ class EventCard extends React.Component<Props,State> {
   render() {
     const {classes} = this.props
     return (
-      <Card className={classes.root} elevation={1}>
+      <Card className={classes.root} elevation={0} variant="outlined">
+        <CardActionArea onClick={()=> this.props.history.push("/events/333")}>
             <CardContent className={classes.contents}>
-        <Typography variant="h2" component="h2">
+        <Typography variant="h2">
           ポーカー会PLO開催! 
         </Typography>
         <Typography variant="body2" component="p" style={{marginTop:"10px"}}>
@@ -62,9 +63,10 @@ class EventCard extends React.Component<Props,State> {
         title="なな原くん@nexx"
         subheader={<Typography variant="caption">1日前</Typography>}
         />
+        </CardActionArea>
      </Card>
     )
   }
 }
 
-export default withStyles(styles,{withTheme:true})(EventCard)
+export default withRouter(withStyles(styles,{withTheme:true})(EventCard))

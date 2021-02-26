@@ -17,10 +17,10 @@ import IconButton from '@material-ui/core/IconButton'
 import Box from '@material-ui/core/Box'
 import Badge from '@material-ui/core/Badge'
 import NotificationsIcon from '@material-ui/icons/Notifications'
-import {makeStyles,Theme,createStyles,withStyles,StyleRules} from '@material-ui/core/styles'
+import {makeStyles,Theme,createStyles,withStyles,WithStyles,StyleRules} from '@material-ui/core/styles'
 import React from 'react'
+import {withRouter,RouteComponentProps} from 'react-router-dom'
 
-const drawWidth = 0 
 
 const styles = (theme:Theme) => createStyles({
   root: {
@@ -30,20 +30,7 @@ const styles = (theme:Theme) => createStyles({
     flexGrow: 1,
   },
   toolbar: theme.mixins.toolbar,
-  drawer: {
-   [theme.breakpoints.up("sm")]: {
-     width: drawWidth,
-     flexshrink:0
-   }
-  },
-  drawerPaper: {
-    width: drawWidth
-  },
   appBar: {
-    [theme.breakpoints.up("sm")]: {
-      width: `calc(100% - ${drawWidth}px)`,
-      marginLeft: drawWidth
-    },
     backgroundColor:theme.palette.common.white,
     boxShadow: "0 0 0 0"
   },
@@ -61,14 +48,9 @@ const styles = (theme:Theme) => createStyles({
 type State = {
   mobileOpen: boolean
 }
-type Props = {
-  window?: () => Window
-  classes: any 
-  theme : Theme
-} 
 
+interface Props extends RouteComponentProps,WithStyles<typeof styles>{}
 
-const container = window !== undefined ? () => window.document.body : undefined
 
 class TopBar extends React.Component<Props,State> {
   constructor(props:any) {
@@ -83,45 +65,12 @@ class TopBar extends React.Component<Props,State> {
     }))
   }
   render() {
-    const { classes,theme } = this.props
+    const { classes } = this.props
     const { mobileOpen } = this.state
-    const drawer = (
-      <div>
-      <div className={classes.toolbar} >
-      <Typography variant="h5" className={classes.title}>
-        TwiGolf
-      </Typography>
-      </div>
-      <Divider />
-      <List>
-        {['Inbox', 'Starred', 'Send email', 'Drafts'].map((text, index) => (
-          <ListItem button key={text}>
-            <ListItemIcon>{index % 2 === 0 ? <InboxIcon /> : <MailIcon />}</ListItemIcon>
-            <ListItemText primary={text} />
-          </ListItem>
-        ))}
-      </List>
-      <Divider />
-      <List>
-        {['All mail', 'Trash', 'Spam'].map((text, index) => (
-          <ListItem button key={text}>
-            <ListItemIcon>{index % 2 === 0 ? <InboxIcon /> : <MailIcon />}</ListItemIcon>
-            <ListItemText primary={text} />
-          </ListItem>
-        ))}
-      </List>
-    </div>
-    )
     return (
     <div className={classes.root}>
       <AppBar position="fixed" className={classes.appBar} >
         <Toolbar>
-          <IconButton edge="start" color="inherit" aria-label="menu"
-            onClick ={() => this.handleMobileToggle()}
-            className={classes.menuButton}
-          >
-            <MenuIcon />
-          </IconButton>
           <Typography  className={classes.grow} >
             <img src={`${process.env.PUBLIC_URL}/twi_logo.jpeg`} />
           </Typography>
@@ -135,41 +84,9 @@ class TopBar extends React.Component<Props,State> {
           </IconButton>
         </Toolbar>
       </AppBar>
-      { /*
-      <nav className={classes.drawer}>
-        <Hidden smUp implementation="css">
-          <Drawer 
-            container= {container}
-            variant= "temporary"
-            anchor= {theme.direction === 'rtl' ? 'right': 'left'}
-            open = {mobileOpen}
-            onClose = {this.handleMobileToggle}
-            classes = {{
-              paper: classes.drawerPaper,
-            }}
-            ModalProps = {{
-              keepMounted: true
-            }}
-          >
-           {drawer}
-          </Drawer>
-        </Hidden>
-              <Hidden xsDown implementation="css">
-          <Drawer
-            classes={{
-              paper: classes.drawerPaper,
-            }}
-            variant="permanent"
-            open
-          >
-          {drawer}
-          </Drawer>
-        </Hidden>
-      </nav>
-      */}
     </div>
     )
   }
 }
 
-export default withStyles(styles,{withTheme:true})(TopBar)
+export default withRouter(withStyles(styles,{withTheme:true})(TopBar))

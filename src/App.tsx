@@ -6,7 +6,7 @@ import {List,ListItem,ListItemText,ListItemIcon} from '@material-ui/core'
 import Grid from '@material-ui/core/Grid'
 import Box from '@material-ui/core/Box'
 import Card from '@material-ui/core/Card'
-import {CardHeader,CardContent} from '@material-ui/core/'
+import {CardHeader,CardContent,colors} from '@material-ui/core/'
 import Paper from '@material-ui/core/Paper'
 import { createMuiTheme,responsiveFontSizes} from '@material-ui/core/styles'
 import { ThemeProvider } from '@material-ui/styles'
@@ -38,16 +38,18 @@ let theme = createMuiTheme({
     },
     h1: {
       fontWeight:700,
-      fontSize:"1.8rm",
-      color:"#2a2b52"
+      fontSize:"1.4rem",
+//      color:"#2a2b52"
     },
     h2: {
       fontWeight:700,
-      fontSize:"1rem"
+      fontSize:"1rem",
+ //     color:"#2a2b52"
     },
     h3: {
       fontWeight:600,
-      fontSize:"0.8rem"
+      fontSize:"0.8rem",
+  //    color:"#2a2b52"
     }
   },
   palette: {
@@ -96,8 +98,33 @@ let theme = createMuiTheme({
     MuiListItem: {
       root: {
         "&$selected": { 
-          backgroundColor:"#6ec6ff",
-          color: "#fff"
+          backgroundColor: "white",
+          color: "#0069c0",
+          '& svg': {
+            color:"#0069c0"
+          }
+        }
+      }
+    },
+    MuiTabs: {
+      indicator: {
+        backgroundColor:"#0069c0"
+      }
+    },
+    MuiTab: {
+      root: {
+        color:"#000000",
+        '&$selected': {
+          fontWeight: 700,
+          color: "#0069c0"
+        }
+      }
+    },
+    MuiRadio: {
+      root: {
+        color: colors.grey[500],
+        '&$checked': {
+          color: colors.blue[700]
         }
       }
     }

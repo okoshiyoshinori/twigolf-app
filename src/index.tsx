@@ -5,13 +5,21 @@ import App from './App';
 import reportWebVitals from './reportWebVitals';
 import { BrowserRouter as Router,Route} from  'react-router-dom'
 import Top from './page/top'
-import Home from './page/home'
+import Layout from './layout/layout'
 ReactDOM.render(
   <React.StrictMode>
    <Router>
     <App> 
       <Route exact path="/" component={Top}></Route>
-      <Route path="/home" component={Home}></Route>
+      <Route path="/users/:uid" component={Layout}></Route>
+      <Route path="/myevents" component={Layout}></Route>
+      <Route path="/creation" component={Layout}></Route>
+      <Route exact path="/events" component={Layout}></Route>
+      <Route path="/events/:id" component={Layout}></Route>
+      <Route path="/search" component={Layout}></Route>
+      <Route path="/guid" component={Layout}></Route>
+      <Route path="/dm" component={Layout}></Route>
+      <Route path="/config" component={Layout}></Route>
     </App>
    </Router>
   </React.StrictMode>,

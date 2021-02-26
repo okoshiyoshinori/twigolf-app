@@ -23,13 +23,14 @@ const styles = (theme:Theme) => createStyles({
   },
   container: {
     [theme.breakpoints.down("sm")]: {
-      padding: 0 
+      padding: 0,
+      marginBottom:"100px",
     }
   },
   select :{
     fontSize:"1.1em",
     fontWeight:700,
-    color: theme.palette.grey[500],
+    color: theme.palette.grey[700],
   }
 })
 
@@ -47,33 +48,37 @@ class All extends React.Component<Props,State> {
     const {tabIndex} = this.state
     const {classes}  = this.props
     return (
-    <Container maxWidth={"md"}  className={classes.container}> 
-      <Grid item sm={12}>
-        <Typography variant="h1" style={{marginBottom:"20px"}}>
+    <Grid container spacing={2}> 
+      <Grid item xs={12} sm={12}>
+        <Typography variant="h1">
            みんなのイベント
         </Typography>
       </Grid>
-      <Grid item sm={12} >
+      <Grid item xs={12} sm={12}>
           <Tabs 
             value={tabIndex}
-            textColor="primary"
+            textColor="inherit"
             indicatorColor="primary"
-            variant="fullWidth"
+            variant="standard"
+            centered
             onChange={(e,val)=> this.handeleChange(e,val)}
+            style={{borderBottom:"2px solid #dfdfdf"}}
           >
-          <Tab label="最新" value={0} className={classes.select} />
-          <Tab label="開催日" value={1} className={classes.select}/>
-          <Tab label="締め切り" value={2} className={classes.select}/>
+          <Tab label="最新" value={0}/>
+          <Tab label="開催日" value={1}/>
+          <Tab label="締切日" value={2}/>
           </Tabs>
       </Grid>
-      <Grid container style={{marginTop:"20px"}} spacing={2}>
+      <Grid item xs={12} sm={12}>
+        <Grid container spacing={2}>
             {[1,2,3,4,5,6].map((i) => (
             <Grid xs={12} sm={4} key={i} item >
               <EventCard />
             </Grid>
             ))}
+        </Grid>
       </Grid>
-     </Container>
+     </Grid>
     )
   }
 }
