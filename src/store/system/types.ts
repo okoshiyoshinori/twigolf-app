@@ -1,55 +1,71 @@
-import { Uid } from '../commonTypes'
-import { AxiosResponse, AxiosError} from 'axios'
+export const SET_LOADING = "SET_LOADING"
+export const SET_RESULT = "SET_RESULT"
+export const RESET_RESULT = "RESET_RESULT"
 
-export interface Pref {
-  pref_id: number,
-  name: string,
+export interface SystemState {
+  result:Result[],
+  loading:Loading
 }
 
-export interface PrefList {
-  list:Pref[]
-}
-
-
-export interface Session {
-  uid: Uid, 
-}
-
-export interface Processing {
-  done: boolean
-}
-
-export interface AppResult {
-  status: number,
+export interface Result {
+  name:string
+  status:number,
   cause: string
-} 
-
-export const GET_PREF = "GET_PREF"
-export const SET_PREF = "SET_PREF"
-export const GET_SESSION = "GET_SESSION"
-export const API_SUCCESS = "API_SUCCESS"
-export const API_ERROR = "API_ERROR"
-export const SET_PROCESSING = "SET_PROCESSING"
-export const SET_APPRESULT = "SET_APPREUSLT"
-
-export interface SetPref {
-  type: typeof SET_PREF,
-  payload: PrefList
 }
 
-export interface GetSession {
-  type: typeof GET_SESSION,
-  payload: Session
+export interface Loading {
+  competition:boolean, 
+  competitions:boolean,
+  clubs:boolean,
+  participants:boolean,
+  comments:boolean,
+  search:boolean
+  user:boolean
 }
 
-export interface SetProcessing {
-  type: typeof SET_PROCESSING,
-  payload: Processing 
+export interface UserLoading {
+  user:boolean
 }
 
-export interface SetAppResult {
-  type: typeof SET_APPRESULT,
-  payload: AppResult 
-} 
+export interface CompetitionLoading {
+  competition:boolean
+}
 
-export type SystemAction = GetSession | SetPref | SetProcessing | SetAppResult
+export interface CompetitionsLoading {
+  competitions:boolean
+}
+
+export interface ClubLoading {
+  clubs:boolean
+}
+
+export interface ParticipantsLoading {
+  participants:boolean
+}
+
+export interface CommentsLoading {
+  comments:boolean
+}
+
+export interface SearchLoading {
+  search:boolean
+}
+
+export type NowLoading = CompetitionLoading | CompetitionsLoading | ClubLoading | ParticipantsLoading | CommentsLoading |
+    SearchLoading | UserLoading
+
+export interface SetLoading {
+  type:typeof SET_LOADING,
+  payload:NowLoading
+}
+
+export interface SetResult {
+  type:typeof SET_RESULT,
+  payload:Result
+}
+
+export interface ResetResult {
+  type:typeof RESET_RESULT
+}
+
+export type SystemAction = SetLoading | SetResult | ResetResult

@@ -56,10 +56,11 @@ class Event extends React.Component<Props,State> {
       </Grid>
       <Grid item xs={12} sm={12}>
         <Grid container>
-        {
+        { /*
           [1,2,3,4].map((i) => ( 
             <EventList key={i} editable={true}/>
           ))
+          */
         }
         </Grid>
       </Grid>

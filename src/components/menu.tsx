@@ -7,62 +7,14 @@ import HomeIcon from '@material-ui/icons/Home'
 import PeopleAltIcon from '@material-ui/icons/PeopleAlt'
 import SearchIcon from '@material-ui/icons/Search'
 import ImportContactsIcon from '@material-ui/icons/ImportContacts'
+import {Session} from '../store/session/types'
 
-interface Props extends RouteComponentProps,WithStyles<typeof styles>{}
-
-type State ={
+interface Props extends RouteComponentProps,WithStyles<typeof styles>{
+  session:Session
 }
 
-interface LinkData {
-  key: string
-  linkTo: string
-  buttonNum: number
-  open:boolean
-}
+type State ={}
 
-const links:LinkData[] = [
-  {
-    key: "HOME",
-    linkTo: "/",
-    buttonNum: 0,
-    open:false
-  },
-  {
-    key: "MYPAGE",
-    linkTo: "/users",
-    buttonNum: 1,
-    open:true
-  },
-  {
-    key: "ALL",
-    linkTo: "/events",
-    buttonNum:6,
-    open:true
-
-  },
-  {
-    key: "SEARCH",
-    linkTo: "/search",
-    buttonNum:7,
-    open:true
-  },
-  {
-    key: "GUID",
-    linkTo: "/guid",
-    buttonNum:8,
-    open:true
-  }
-] 
-
-const getLinkTo = (key:string,param?:string):string => {
-  const result = links.filter((ele)=> {
-    return (ele.key === key)
-  })
-  if (param != undefined) {
-    return result[0].linkTo + '/' +  param
-  }
-  return result[0].linkTo
-}
 
 const styles = (theme:Theme) => createStyles({
   root: {
@@ -97,22 +49,22 @@ class Menu extends React.Component<Props,State> {
       open: true
     }
   }
-  accessTo(key:string,params?:string) {
-    this.props.history.push(getLinkTo(key,params))
-  }
   render() {
-    const {classes} = this.props
+    const {classes,session} = this.props
     return (
       <Grid container >
         <Grid item xs={12} sm={12}>
           <Card elevation={0} variant="outlined" className={classes.main} >
             <List component="nav" style={{padding:0}}>
-              <ListItem button divider  component={NavLink} to="/users/nex72" activeClassName="Mui-selected">
+            { 
+              session.login &&
+              <ListItem button divider  component={NavLink} to={"/users/" + session.auth.sns_id} activeClassName="Mui-selected">
                 <ListItemIcon>
                   <HomeIcon/>
                 </ListItemIcon>
                 <ListItemText primary={<Typography variant="h3">マイページ</Typography>} />
               </ListItem>
+            }
               <ListItem button divider component={NavLink} to="/events" activeClassName="Mui-selected" exact>
                 <ListItemIcon>
                   <PeopleAltIcon />

@@ -4,6 +4,7 @@ import Typography from '@material-ui/core/Typography'
 import Toolbar from '@material-ui/core/Toolbar'
 import Hidden from '@material-ui/core/Hidden'
 import Drawer from '@material-ui/core/Drawer'
+import Avatar from '@material-ui/core/Avatar'
 import List from '@material-ui/core/List'
 import InboxIcon from '@material-ui/icons/MoveToInbox'
 import Divider from '@material-ui/core/Divider'
@@ -14,12 +15,14 @@ import MailIcon from '@material-ui/icons/Mail'
 import MenuIcon from '@material-ui/icons/Menu'
 import ExitToAppIcon from '@material-ui/icons/ExitToApp'
 import IconButton from '@material-ui/core/IconButton'
+import Tooltip from '@material-ui/core/Tooltip'
 import Box from '@material-ui/core/Box'
 import Badge from '@material-ui/core/Badge'
 import NotificationsIcon from '@material-ui/icons/Notifications'
 import {makeStyles,Theme,createStyles,withStyles,WithStyles,StyleRules} from '@material-ui/core/styles'
 import React from 'react'
 import {withRouter,RouteComponentProps} from 'react-router-dom'
+import {Session} from '../store/session/types'
 
 
 const styles = (theme:Theme) => createStyles({
@@ -49,7 +52,10 @@ type State = {
   mobileOpen: boolean
 }
 
-interface Props extends RouteComponentProps,WithStyles<typeof styles>{}
+interface Props extends RouteComponentProps,WithStyles<typeof styles>{
+  session:Session
+  handler:Function
+}
 
 
 class TopBar extends React.Component<Props,State> {
@@ -64,8 +70,13 @@ class TopBar extends React.Component<Props,State> {
       mobileOpen: !state.mobileOpen
     }))
   }
+  handleAvatarClick(){
+    if (window.confirm("ログアウトしますか？")) {
+      this.props.handler() 
+    }
+  }
   render() {
-    const { classes } = this.props
+    const { classes,session } = this.props
     const { mobileOpen } = this.state
     return (
     <div className={classes.root}>
@@ -74,14 +85,19 @@ class TopBar extends React.Component<Props,State> {
           <Typography  className={classes.grow} >
             <img src={`${process.env.PUBLIC_URL}/twi_logo.jpeg`} />
           </Typography>
-          <IconButton aria-label="notifications" color="inherit">
-              <Badge badgeContent={1} color="error">
-                <NotificationsIcon />
-              </Badge>
-          </IconButton>
+          { !session.login &&
           <IconButton edge="end" color="inherit" arial-label="login">
             <ExitToAppIcon/>
           </IconButton>
+           }
+           { session.login &&
+
+           <IconButton size="small">
+           <Tooltip title="ログアウト" aria-label="logout">
+           <Avatar onClick={()=> this.handleAvatarClick()} alt="Travis Howard" src={process.env.PUBLIC_URL + "/" + session.auth.avatar} />
+           </Tooltip>
+           </IconButton>
+           }
         </Toolbar>
       </AppBar>
     </div>

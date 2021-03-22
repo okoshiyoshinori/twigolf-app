@@ -1,35 +1,21 @@
-import * as tsystem from './types'
-import {Dispatch} from 'redux'
-import api from '../../api'
-import {API_PREF} from '../../api'
+import * as sys from './types' 
 
-export const SetAppResult = (result:tsystem.AppResult):tsystem.SystemAction => {
+export const SetLoading = (data:sys.NowLoading):sys.SystemAction => {
   return {
-    type: tsystem.SET_APPRESULT,
-    payload: result 
+    type: sys.SET_LOADING,
+    payload: data,
   }
 }
 
-export const SetProcessing = (data:tsystem.Processing):tsystem.SystemAction => {
+export const SetResult = (data:sys.Result):sys.SystemAction => {
   return {
-    type: tsystem.SET_PROCESSING,
+    type: sys.SET_RESULT,
     payload: data
   }
 }
 
-export const SetPref = (pref:tsystem.PrefList):tsystem.SystemAction => {
+export const ResetResult = ():sys.SystemAction => {
   return {
-    type: tsystem.SET_PREF, 
-    payload: pref
-  }
-}
-
-export const GetPref = () => {
-  return async (dispatch:Dispatch) => {
-    const res = await api.get(API_PREF)
-    if (res.status == 200) {
-     return dispatch(SetPref(res.data))
-    }
-    return dispatch(SetAppResult({status:res.status,cause:res.statusText}))
+    type:sys.RESET_RESULT
   }
 }

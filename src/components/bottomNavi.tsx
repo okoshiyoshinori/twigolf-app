@@ -8,7 +8,10 @@ import SearchIcon from '@material-ui/icons/Search'
 import ImportContactsIcon from '@material-ui/icons/ImportContacts'
 import Menu from '@material-ui/core/Menu'
 import MenuItem from '@material-ui/core/MenuItem'
-interface Props extends RouteComponentProps,WithStyles<typeof styles>{}
+import {Session} from '../store/session/types'
+interface Props extends RouteComponentProps,WithStyles<typeof styles>{
+  session:Session
+}
 interface State {
   selected: string
 }
@@ -42,11 +45,13 @@ class BottomNavi extends React.Component<Props,State> {
   }
   render(){
     const {selected} = this.state
-    const {classes} = this.props
+    const {classes,session} = this.props
     return (
     <div>
       <BottomNavigation  showLabels className={classes.root} value={selected} onChange={(e,val)=>this.hundleChange(e,val)}>
-        <BottomNavigationAction  value={"/users/nex72"} className={classes.select} label="マイページ" key="mypage" icon={<HomeIcon />} />
+      { session.login &&
+        <BottomNavigationAction  value={"/users/" + session.auth.sns_id} className={classes.select} label="マイページ" key="mypage" icon={<HomeIcon />} />
+      }
         <BottomNavigationAction value={"/events"} className={classes.select} label="イベント" key="event" icon={<PeopleAltIcon />} />
         <BottomNavigationAction value={"/search"} className={classes.select} label="検索" key="search" icon={<SearchIcon />} />
         <BottomNavigationAction value={"/guid"} className={classes.select} label="ガイド" key="guide" icon={<ImportContactsIcon />} />

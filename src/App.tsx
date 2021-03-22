@@ -19,6 +19,7 @@ import EmojiPeopleIcon from '@material-ui/icons/EmojiPeople'
 import SearchIcon from '@material-ui/icons/Search'
 import DataUsageIcon from '@material-ui/icons/DataUsage'
 import {NavLink,withRouter,RouteComponentProps} from 'react-router-dom'
+import {RootState} from './store'
 
 let theme = createMuiTheme({
   typography: {
@@ -48,7 +49,7 @@ let theme = createMuiTheme({
     },
     h3: {
       fontWeight:600,
-      fontSize:"0.8rem",
+      fontSize:"0.9rem",
   //    color:"#2a2b52"
     }
   },
@@ -180,7 +181,6 @@ const styles = (them:Theme) => createStyles({
   }
 })
 
-
 class App extends React.Component<Props,State> {
   constructor(props:Props) {
     super(props)
@@ -191,8 +191,7 @@ class App extends React.Component<Props,State> {
       <React.Fragment>
         <ThemeProvider theme={theme}>
         <CssBaseLine />
-          <TopBar/>
-                {this.props.children}
+          {this.props.children}
         </ThemeProvider>
       </React.Fragment>
     )

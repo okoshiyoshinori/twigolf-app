@@ -6,8 +6,11 @@ import reportWebVitals from './reportWebVitals';
 import { BrowserRouter as Router,Route} from  'react-router-dom'
 import Top from './page/top'
 import Layout from './layout/layout'
+import store from './store'
+import {Provider}  from 'react-redux'
 ReactDOM.render(
   <React.StrictMode>
+  <Provider store={store}>
    <Router>
     <App> 
       <Route exact path="/" component={Top}></Route>
@@ -22,6 +25,7 @@ ReactDOM.render(
       <Route path="/config" component={Layout}></Route>
     </App>
    </Router>
+   </Provider>
   </React.StrictMode>,
   document.getElementById('root')
 );

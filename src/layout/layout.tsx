@@ -14,8 +14,13 @@ import Dm from '../page/dm'
 import Config from '../page/config'
 import Detail from '../page/detail'
 import BottomNavi from '../components/bottomNavi'
+import TopBar from '../components/TopBar'
+import {RootState} from '../store'
+import {Dispatch} from 'redux'
+import {connect} from 'react-redux'
+import {GetSession,LogOut} from '../store/session/api'
 
-interface Props extends RouteComponentProps,WithStyles<typeof styles>{}
+interface Props extends ReduxProps,RouteComponentProps,WithStyles<typeof styles>{}
 type State = {}
 
 const styles = (theme:Theme) => createStyles({
@@ -37,20 +42,29 @@ class Layout extends React.Component<Props,State> {
   constructor(props:Props) {
     super(props)
   }
+  componentDidMount() {
+   if (this.props.session.auth.id == undefined) {
+    this.props.getSession()
+   }
+  }
+  logouthandler(){
+    this.props.logOut()
+  }
   render() {
-    const {classes} = this.props
+    const {classes,session} = this.props
     return (
     <div>
       <Container maxWidth={"lg"} className={classes.container}>
         <div className={classes.toolbar}/>
-        <Grid container className={classes.root} direction="row" justify="flex-start" spacing={4}>
+        <TopBar session={session} handler={()=>this.logouthandler()}/>
+        <Grid container className={classes.root} direction="row" justify="flex-start" spacing={5}>
           <Hidden smDown >
-            <Grid md={3} item>
-              <Menu />
+            <Grid  md={3} item>
+              <Menu session={session}/>
             </Grid>
           </Hidden>
           <Grid sm={12} md={7} item>
-              <Route  path="/users/:uid" component={Plan} />
+              <Route  path="/users/:snsid" component={Plan} />
               <Route  path="/myevents" component={Events} />
               <Route  path="/creation" component={Editing} />
               <Route exact path="/events" component={All} />
@@ -63,10 +77,30 @@ class Layout extends React.Component<Props,State> {
         </Grid>
      </Container>
      <Hidden smUp>
-          <BottomNavi />
+          <BottomNavi session={session} />
           </Hidden>
      </div>
     )
   }
 }
-export default withRouter(withStyles(styles,{withTheme:true})(Layout))
+
+const  mapStateToProps = (state:RootState) => {
+  return  {
+    session:state.session,
+  }
+}
+
+const mapDispatchToProps = (dispatch:Dispatch) => {
+  return {
+    getSession() {
+      GetSession()(dispatch)
+    },
+    logOut() {
+      LogOut()(dispatch)
+    }
+  }
+}
+
+type ReduxProps = ReturnType<typeof mapStateToProps> & ReturnType<typeof mapDispatchToProps>
+
+export default connect(mapStateToProps,mapDispatchToProps)(withRouter(withStyles(styles,{withTheme:true})(Layout)))

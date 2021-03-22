@@ -80,7 +80,9 @@ class Top extends React.Component<Props,State> {
           <Grid container style={{marginTop:"20px"}} spacing={2}>
             {[1,2,3,4,5,6].map((i) => (
             <Grid xs={12} sm={4} key={i} item >
+            { /*
               <EventCard />
+             */}
             </Grid>
             ))}
           </Grid>

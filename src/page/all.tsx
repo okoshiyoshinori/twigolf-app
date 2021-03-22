@@ -6,14 +6,27 @@ import Grid from '@material-ui/core/Grid'
 import Container from '@material-ui/core/Container'
 import {createStyles,Theme,withStyles,WithStyles} from '@material-ui/core/styles'
 import EventCard from '../components/EventCard'
+import EventList from '../components/eventlist'
 import {List,ListItem} from '@material-ui/core'
 import Typography from '@material-ui/core/Typography'
 import {withRouter,RouteComponentProps} from 'react-router-dom'
+import {GetCompetitions} from '../store/app/api'
+import Progress from '../components/progress'
+import Message from '../components/message'
+import {RootState} from '../store'
+import {connect} from 'react-redux' 
+import {Dispatch} from 'redux'
+import {ResetResult} from '../store/system/actions'
+import querystring from 'query-string'
+import {SearchLog} from '../util/util'
 
-interface Props extends RouteComponentProps,WithStyles<typeof styles> {}
+
+
+interface Props extends ReduxProps,RouteComponentProps,WithStyles<typeof styles> {}
 
 type State = {
   tabIndex: number
+  page:number
 }
 
 const styles = (theme:Theme) => createStyles({
@@ -37,16 +50,41 @@ const styles = (theme:Theme) => createStyles({
 class All extends React.Component<Props,State> {
   constructor(props:Props) {
     super(props)
-    this.state = {
-      tabIndex: 0 
-    }
+    this.state = this.parseQuery(this.props)
+  }
+  componentDidMount() {
+    this.props.resetLog()
+    this.props.getCompetitions(this.state.page,this.state.tabIndex)
   }
   handeleChange(event:React.ChangeEvent<{}>,newIndex:number) {
     this.setState({tabIndex:newIndex})
+    //const {page} = this.parseQuery(this.props)
+    this.props.history.push({
+      search: `?p=1&sort=${newIndex}`
+    })
+  }
+  parseQuery(props:Props):State {
+    const parse = querystring.parse(props.location.search)
+    return {
+      tabIndex:parse.sort === undefined ? 1: Number(parse.sort),
+      page:parse.p === undefined ? 1: Number(parse.p)
+    }
+  }
+  componentDidUpdate(prevProps:Props) {
+    if (this.props.location.search !== prevProps.location.search) {
+      this.props.resetLog()
+      const {page,tabIndex} = this.parseQuery(this.props) 
+      this.setState({
+        page:page,
+        tabIndex:tabIndex
+      })
+      this.props.getCompetitions(page,tabIndex)
+    }
   }
   render() {
     const {tabIndex} = this.state
-    const {classes}  = this.props
+    const {classes,competitions,system}  = this.props
+    const competitionsResult = SearchLog(system.result,"competitions")
     return (
     <Grid container spacing={2}> 
       <Grid item xs={12} sm={12}>
@@ -64,23 +102,42 @@ class All extends React.Component<Props,State> {
             onChange={(e,val)=> this.handeleChange(e,val)}
             style={{borderBottom:"2px solid #dfdfdf"}}
           >
-          <Tab label="最新" value={0}/>
-          <Tab label="開催日" value={1}/>
-          <Tab label="締切日" value={2}/>
+          <Tab label="最新" value={1}/>
+          <Tab label="開催日" value={2}/>
+          <Tab label="締切日" value={3}/>
           </Tabs>
       </Grid>
-      <Grid item xs={12} sm={12}>
-        <Grid container spacing={2}>
-            {[1,2,3,4,5,6].map((i) => (
-            <Grid xs={12} sm={4} key={i} item >
-              <EventCard />
-            </Grid>
-            ))}
-        </Grid>
+      <Grid item xs={12} sm={12} md={12}>
+        <Paper variant="outlined">
+            {system.loading.competitions === true && <Progress/>}
+            {competitionsResult.status !== 200 && <Message mes={competitionsResult.cause}/>}
+            { competitionsResult.status === 200 && 
+              <EventList data={competitions.payload}/>
+            }
+        </Paper>
       </Grid>
      </Grid>
     )
   }
 }
 
-export default withRouter(withStyles(styles,{withTheme:true})(All))
+const mapStateToProps = (state:RootState) => {
+  return {
+    competitions: state.app.competitions,
+    system:state.system
+  }
+}
+
+const mapDispatchToProps = (dispatch:Dispatch) => {
+  return {
+    getCompetitions(page:number,sort:number){
+      GetCompetitions(page,sort)(dispatch)
+    },
+    resetLog() {
+      dispatch(ResetResult())
+    }
+  }
+}
+type ReduxProps = ReturnType<typeof mapStateToProps> & ReturnType<typeof mapDispatchToProps>
+
+export default connect(mapStateToProps,mapDispatchToProps)(withRouter(withStyles(styles,{withTheme:true})(All)))
