@@ -9,8 +9,13 @@ const initState:types.SystemState = {
     comments:false,
     participants:false,
     search:false,
-    user:false
-  } 
+    user:false,
+    combinations:false,
+  },
+  snack:{
+    status:null,
+    message:""
+  }
 }
 
 const Reducers = (state:types.SystemState=initState,action:types.SystemAction):types.SystemState =>{
@@ -21,12 +26,23 @@ const Reducers = (state:types.SystemState=initState,action:types.SystemAction):t
      return Object.assign(b,a) 
     case types.SET_RESULT:
       let after = {...state}
-      after.result.push(action.payload)
+      after.result.unshift(action.payload)
       return after 
     case types.RESET_RESULT:
       let base = {...state}
       base.result = []
       return base
+    case types.SET_SNACK:
+      let temp = {...state}
+      temp.snack = action.payload
+      return temp
+    case types.RESET_SNACK:
+      let temp1 = {...state}
+      temp1.snack = {
+        status:null,
+        message:""
+      }
+      return temp1
     default:
       return state
   }

@@ -42,19 +42,20 @@ class BottomNavi extends React.Component<Props,State> {
   }
   hundleChange(e:React.ChangeEvent<{}>,v:string) {
     this.props.history.push(v)
+    this.setState({selected:v})
   }
   render(){
     const {selected} = this.state
     const {classes,session} = this.props
     return (
     <div>
-      <BottomNavigation  showLabels className={classes.root} value={selected} onChange={(e,val)=>this.hundleChange(e,val)}>
+      <BottomNavigation  showLabels={false} className={classes.root} value={selected} onChange={(e,val)=>this.hundleChange(e,val)}>
       { session.login &&
-        <BottomNavigationAction  value={"/users/" + session.auth.sns_id} className={classes.select} label="マイページ" key="mypage" icon={<HomeIcon />} />
+        <BottomNavigationAction showLabel={false}  value={"/users/" + session.auth.sns_id} className={classes.select} key="mypage" icon={<HomeIcon />} />
       }
-        <BottomNavigationAction value={"/events"} className={classes.select} label="イベント" key="event" icon={<PeopleAltIcon />} />
-        <BottomNavigationAction value={"/search"} className={classes.select} label="検索" key="search" icon={<SearchIcon />} />
-        <BottomNavigationAction value={"/guid"} className={classes.select} label="ガイド" key="guide" icon={<ImportContactsIcon />} />
+        <BottomNavigationAction showLabel={false}  value={"/events"} className={classes.select} key="event" icon={<PeopleAltIcon />} />
+        <BottomNavigationAction showLabel={false}  value={"/search"} className={classes.select} key="search" icon={<SearchIcon />} />
+        <BottomNavigationAction showLabel={false}  value={"/guid"} className={classes.select}   key="guide" icon={<ImportContactsIcon />} />
       </BottomNavigation>
     </div>
     )

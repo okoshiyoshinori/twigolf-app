@@ -19,6 +19,8 @@ import {Dispatch} from 'redux'
 import {ResetResult} from '../store/system/actions'
 import querystring from 'query-string'
 import {SearchLog} from '../util/util'
+import Pagination from '@material-ui/lab/Pagination'
+import {Helmet} from 'react-helmet'
 
 
 
@@ -53,7 +55,6 @@ class All extends React.Component<Props,State> {
     this.state = this.parseQuery(this.props)
   }
   componentDidMount() {
-    this.props.resetLog()
     this.props.getCompetitions(this.state.page,this.state.tabIndex)
   }
   handeleChange(event:React.ChangeEvent<{}>,newIndex:number) {
@@ -61,6 +62,12 @@ class All extends React.Component<Props,State> {
     //const {page} = this.parseQuery(this.props)
     this.props.history.push({
       search: `?p=1&sort=${newIndex}`
+    })
+  }
+  handelePage(page:number) {
+    this.setState({page:page})
+    this.props.history.push({
+      search: `?p=${page}&sort=${this.state.tabIndex}`
     })
   }
   parseQuery(props:Props):State {
@@ -72,7 +79,6 @@ class All extends React.Component<Props,State> {
   }
   componentDidUpdate(prevProps:Props) {
     if (this.props.location.search !== prevProps.location.search) {
-      this.props.resetLog()
       const {page,tabIndex} = this.parseQuery(this.props) 
       this.setState({
         page:page,
@@ -81,41 +87,56 @@ class All extends React.Component<Props,State> {
       this.props.getCompetitions(page,tabIndex)
     }
   }
+  componentWillUnmount() {
+    this.props.resetLog()
+  }
   render() {
     const {tabIndex} = this.state
     const {classes,competitions,system}  = this.props
     const competitionsResult = SearchLog(system.result,"competitions")
+    const allPage:number = Math.ceil(competitions.allNumber/Number(process.env.REACT_APP_PERNUM))
     return (
     <Grid container spacing={2}> 
+      <div className="All">
+        <Helmet>
+         <title>みんなのイベント</title>
+        </Helmet>
+      </div>
       <Grid item xs={12} sm={12}>
         <Typography variant="h1">
            みんなのイベント
         </Typography>
       </Grid>
       <Grid item xs={12} sm={12}>
+        <Paper variant="outlined" style={{padding:"15px 15px 0 15px",borderRadius:10}}>
           <Tabs 
             value={tabIndex}
             textColor="inherit"
             indicatorColor="primary"
-            variant="standard"
+            variant="fullWidth"
             centered
             onChange={(e,val)=> this.handeleChange(e,val)}
-            style={{borderBottom:"2px solid #dfdfdf"}}
           >
-          <Tab label="最新" value={1}/>
-          <Tab label="開催日" value={2}/>
-          <Tab label="締切日" value={3}/>
+          <Tab label="最新" style={{fontSize:15}}  value={1}/>
+          <Tab label="開催日" style={{fontSize:15}} value={2}/>
+          <Tab label="締切日" style={{fontSize:15}} value={3}/>
           </Tabs>
-      </Grid>
-      <Grid item xs={12} sm={12} md={12}>
-        <Paper variant="outlined">
-            {system.loading.competitions === true && <Progress/>}
-            {competitionsResult.status !== 200 && <Message mes={competitionsResult.cause}/>}
-            { competitionsResult.status === 200 && 
-              <EventList data={competitions.payload}/>
-            }
         </Paper>
       </Grid>
+     {system.loading.competitions && <Progress/>}
+     {competitionsResult.status !== 200 && !system.loading.competitions && <Message mes={competitionsResult.cause}/>}
+     {competitionsResult.status == 200 && !system.loading.competitions && 
+     <>
+      <Grid item xs={12} sm={12} md={12}>
+        <Paper variant="outlined">
+              <EventList data={competitions.payload}/>
+        </Paper>
+      </Grid>
+      <Grid item xs={12} sm={12} md={12}>
+        <Pagination shape="rounded" page={this.state.page} onChange={(e,p) => this.handelePage(p)} count={allPage} boundaryCount={5}/>
+      </Grid>
+      </>
+     }
      </Grid>
     )
   }

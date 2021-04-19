@@ -1,7 +1,7 @@
 import React from 'react'
 import {createStyles,Theme,withStyles,WithStyles} from '@material-ui/core/styles/'
 import {Chip} from '@material-ui/core/'
-import { red } from '@material-ui/core/colors'
+import { red,grey,blue } from '@material-ui/core/colors'
 import {withRouter,RouteComponentProps} from 'react-router-dom'
 
 interface Props extends RouteComponentProps,WithStyles<typeof styles>{
@@ -13,13 +13,14 @@ type State = {}
 const styles = (theme:Theme) => createStyles({
       root: {
       display: 'flex',
-      justifyContent: 'left',
+      justifyContent: 'center',
       flexWrap: 'wrap',
-      marginTop: theme.spacing(1),
       '& > *': {
-        margin: theme.spacing(0.5),
+        margin: theme.spacing(0.3),
         color: theme.palette.common.white,
-        backgroundColor: red[500],
+        padding:5,
+        backgroundColor: blue[600],
+        fontSize:12,
         fontWeight:600
       }
     }

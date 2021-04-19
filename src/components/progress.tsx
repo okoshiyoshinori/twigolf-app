@@ -11,7 +11,7 @@ export default class Progress extends React.Component<Props,State> {
   }
   render() {
     return (
-      <Grid container style={{marginTop:"10px"}} alignItems="center" justify="center">
+      <Grid container alignItems="center" justify="center">
           <CircularProgress/>
       </Grid>
     )

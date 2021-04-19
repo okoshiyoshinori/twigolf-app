@@ -10,14 +10,16 @@ import Message from '../components/message'
 import {RootState} from '../store'
 import {connect} from 'react-redux' 
 import {Dispatch} from 'redux'
-import {ResetResult} from '../store/system/actions'
 import querystring from 'query-string'
+import {ResetResult} from '../store/system/actions'
+import Pagination from '@material-ui/lab/Pagination'
+import {Helmet} from 'react-helmet'
 
 interface Props extends ReduxProps,RouteComponentProps,WithStyles<typeof styles>{}
 
 type State = {
-  p:string
-  mode:string
+  p:number
+  mode:number
   date:string
   dis:boolean
   keyword:string
@@ -53,49 +55,54 @@ class Search extends React.Component<Props,State> {
         search:`?mode=${this.state.mode}&q=${this.state.keyword}&p=${this.state.p}&date=${this.state.date}&k=${Date.now()}`
     })
   }
+  componentWillUnmount() {
+    this.props.resetLog()
+  }
   componentDidUpdate(prevProps:Props) {
     if (this.props.location.search !== prevProps.location.search) {
-       this.props.resetLog()
        let parse = this.parseQuery(this.props)
        this.setState({
          mode:parse.mode,
          date:parse.date,
          keyword:parse.keyword,
          p: parse.p,
-         dis: parse.mode == "1"? true:false
+         dis: parse.mode == 1? true:false
        })
-       const {date,mode,dis,keyword} = parse 
+       const {p,date,mode,dis,keyword} = parse 
        const inputdate = date == "" ? null: date
        const inputmode = Number(mode)
-       this.props.search(0,keyword,inputdate,inputmode)
+       this.props.search(p,keyword,inputdate,inputmode)
     }
-  }
-  componentWillUnmount() {
-    this.props.resetLog()
   }
   parseQuery(props:Props):State{
     const parse = querystring.parse(props.location.search)
-    let mode:string = parse.mode === undefined ? "1": parse.mode as string
-    let p:string = parse.p === undefined ? "0": parse.p as string
-    let date:string = parse.date === undefined ? dateFormatNotime(new Date()): parse.date as string
-    let keyword:string = parse.q === undefined ? "": parse.q as string
+    let mode:string = parse.mode == undefined ? "1": parse.mode as string
+    let p:string = parse.p == undefined ? "1": parse.p as string
+    let date:string = parse.date == undefined ? dateFormatNotime(new Date()): parse.date as string
+    let keyword:string = parse.q == undefined ? "": parse.q as string
     return {
-      mode:mode,
-      p:p,
+      mode:Number(mode),
+      p:Number(p),
       date:date,
-      dis: mode === "1" ? true: false,
+      dis: mode == "1" ? true: false,
       keyword:keyword
     }
   }
+  handelePage(page:number) {
+    this.setState({p:page})
+    this.props.history.push({
+      search: `?p=${page}&mode=${this.state.mode}&date=${this.state.date}&keyword=${this.state.keyword}`
+    })
+  }
   handleRadio(e:React.ChangeEvent<{}>) {
-    if ((e.target as HTMLInputElement).value === '1') {
+    if ((e.target as HTMLInputElement).value == '1') {
       this.setState({
-        mode: "1",
+        mode: 1,
         dis: true
       })
     } else {
       this.setState({
-        mode: "2",
+        mode: 2,
         dis: false
       })
     }
@@ -103,8 +110,14 @@ class Search extends React.Component<Props,State> {
   render() {
     const {classes,competitions,system} = this.props
     const searchResult = SearchLog(system.result,"search")
+    const allPage:number = Math.ceil(competitions.allNumber/Number(process.env.REACT_APP_PERNUM))
     return (
     <Grid container spacing={3}>
+      <div className="Search">
+        <Helmet>
+         <title>検索</title>
+        </Helmet>
+      </div>
       <Grid item xs={12} sm={12}>
         <Typography variant="h1">
           検索
@@ -119,14 +132,14 @@ class Search extends React.Component<Props,State> {
                   <RadioGroup row  value={this.state.mode} onChange={(e)=>this.handleRadio(e)}>
                     <FormControlLabel 
                       control={<Radio color="default"/>}
-                      value="1"
+                      value={1}
                       labelPlacement="end"
                       label="指定"
                      />
                      <FormControlLabel 
                       control={<Radio color="default"/>}
                       labelPlacement="end"
-                      value="2"
+                      value={2}
                       label="未定"
                      />
                   </RadioGroup>
@@ -179,15 +192,20 @@ class Search extends React.Component<Props,State> {
           </Grid>
         </Paper>
       </Grid>
-      <Grid item xs={12} sm={12} >
-        {searchResult.status !== 200 && <Message mes={searchResult.cause}/>}
+        {searchResult.status != 200 && searchResult.status != 999 && <Message mes={searchResult.cause}/>}
         {system.loading.search && <Progress/>}
-        {!system.loading.search && searchResult.status === 200 && 
-        <Paper elevation={0} variant="outlined" >
-          <EventList data={competitions.payload} editable={false}/>
+        {!system.loading.search && searchResult.status == 200 && 
+        <>
+      <Grid item xs={12} sm={12} >
+              <Paper elevation={0} variant="outlined" >
+          <EventList data={competitions.payload} />
         </Paper>
-        }
       </Grid>
+      <Grid item xs={12} sm={12} md={12}>
+        <Pagination shape="rounded" page={this.state.p} onChange={(e,p) => this.handelePage(p)} count={allPage} boundaryCount={5}/>
+      </Grid>
+      </>
+        }
     </Grid>
     )
   }
@@ -209,7 +227,6 @@ const mapDispatchToProps = (dispatch:Dispatch) => {
       dispatch(ResetResult())
     }
   }
-
 }
 type ReduxProps = ReturnType<typeof mapStateToProps> & ReturnType<typeof mapDispatchToProps>
 

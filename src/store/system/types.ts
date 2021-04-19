@@ -1,26 +1,37 @@
 export const SET_LOADING = "SET_LOADING"
 export const SET_RESULT = "SET_RESULT"
 export const RESET_RESULT = "RESET_RESULT"
+export const SET_SNACK = "SET_SNACK"
+export const RESET_SNACK = "RESET_SNACK"
 
 export interface SystemState {
   result:Result[],
   loading:Loading
+  snack: SnackData
 }
 
 export interface Result {
   name:string
-  status:number,
+  status:number
   cause: string
 }
 
 export interface Loading {
-  competition:boolean, 
-  competitions:boolean,
-  clubs:boolean,
-  participants:boolean,
-  comments:boolean,
+  competition:boolean 
+  competitions:boolean
+  clubs:boolean
+  participants:boolean
+  comments:boolean
   search:boolean
   user:boolean
+  combinations:boolean
+}
+
+export type snackStatus = "error" | "warning" | "info" | "success" | null
+
+export interface SnackData {
+  status: snackStatus,
+  message:string
 }
 
 export interface UserLoading {
@@ -51,8 +62,12 @@ export interface SearchLoading {
   search:boolean
 }
 
+export interface CombinationLoading {
+  combinations:boolean
+}
+
 export type NowLoading = CompetitionLoading | CompetitionsLoading | ClubLoading | ParticipantsLoading | CommentsLoading |
-    SearchLoading | UserLoading
+    SearchLoading | UserLoading | CombinationLoading
 
 export interface SetLoading {
   type:typeof SET_LOADING,
@@ -68,4 +83,13 @@ export interface ResetResult {
   type:typeof RESET_RESULT
 }
 
-export type SystemAction = SetLoading | SetResult | ResetResult
+export interface SetSnack {
+  type:typeof SET_SNACK,
+  payload: SnackData
+}
+
+export interface ResetSnack {
+  type:typeof RESET_SNACK
+}
+
+export type SystemAction = SetLoading | SetResult | ResetResult | SetSnack | ResetSnack

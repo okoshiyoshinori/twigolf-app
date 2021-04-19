@@ -19,3 +19,16 @@ export const ResetResult = ():sys.SystemAction => {
     type:sys.RESET_RESULT
   }
 }
+
+export const SetSnack = (data:sys.SnackData):sys.SystemAction => {
+  return {
+    type:sys.SET_SNACK,
+    payload:data
+  }
+}
+
+export const ResetSnack = ():sys.SystemAction => {
+  return {
+    type:sys.RESET_SNACK
+  }
+}

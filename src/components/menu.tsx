@@ -52,8 +52,6 @@ class Menu extends React.Component<Props,State> {
   render() {
     const {classes,session} = this.props
     return (
-      <Grid container >
-        <Grid item xs={12} sm={12}>
           <Card elevation={0} variant="outlined" className={classes.main} >
             <List component="nav" style={{padding:0}}>
             { 
@@ -85,8 +83,6 @@ class Menu extends React.Component<Props,State> {
               </ListItem>
             </List>
           </Card>
-        </Grid>
-      </Grid>
     )
   }
 } 

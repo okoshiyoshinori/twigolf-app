@@ -7,7 +7,8 @@ const initState:types.AppState = {
   clubs:[] as types.Club[],
   participants:[] as types.Participant[],
   searchresult:{} as types.FetchResult,
-  user:{} as types.User
+  user:{} as types.User,
+  combinations:[] as types.Combination[],
 }
 
 const Reducers = (state:types.AppState= initState,action:types.AppAction):types.AppState => {
@@ -35,6 +36,10 @@ const Reducers = (state:types.AppState= initState,action:types.AppAction):types.
     case types.SET_PATICIPANTS:
       return Object.assign({},state,{
         participants: action.payload
+      })
+    case types.SET_COMBINATIONS:
+      return Object.assign({},state,{
+        combinations: action.payload
       })
     case types.SET_SEARCH_RESULT:
       return Object.assign({},state,{

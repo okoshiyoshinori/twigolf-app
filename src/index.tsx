@@ -14,15 +14,7 @@ ReactDOM.render(
    <Router>
     <App> 
       <Route exact path="/" component={Top}></Route>
-      <Route path="/users/:uid" component={Layout}></Route>
-      <Route path="/myevents" component={Layout}></Route>
-      <Route path="/creation" component={Layout}></Route>
-      <Route exact path="/events" component={Layout}></Route>
-      <Route path="/events/:id" component={Layout}></Route>
-      <Route path="/search" component={Layout}></Route>
-      <Route path="/guid" component={Layout}></Route>
-      <Route path="/dm" component={Layout}></Route>
-      <Route path="/config" component={Layout}></Route>
+      <Route path={["/users/:snsid","/events","/events/:id","/search","/guid","/dm","/config","/creation","/pa_management","/compe_management"]}  component={Layout}/>
     </App>
    </Router>
    </Provider>

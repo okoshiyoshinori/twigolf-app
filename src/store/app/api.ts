@@ -1,8 +1,24 @@
 import client, * as api  from '../../api/'
 import {Dispatch} from 'redux'
-import {SetCompetition,SetUser,SetCompetitions,SetClubs,SetComments,SetParticipants,SetSearchResult} from './actions'
+import {SetCombinations,SetCompetition,SetUser,SetCompetitions,SetClubs,SetComments,SetParticipants,SetSearchResult} from './actions'
 import * as sys from '../system/actions' 
+import {BundleCombination,BundleParticipant,PostParticipant,PostComment,PostCompetition,PostRealName} from '../app/types'
 
+export const GetCombination = (cid:number) => {
+  return async (dispatch:Dispatch) => {
+    dispatch(sys.SetLoading({combinations:true}))
+    await client.get(api.API_GET_COMBINATIONS + "/" + cid).then(res => {
+      dispatch(SetCombinations(res.data))
+      dispatch(sys.SetResult({name:"combinations",status:200,cause:"ok"}))
+      dispatch(sys.SetLoading({combinations:false}))
+    }).catch(error => {
+      if (error.response) {
+        dispatch(sys.SetResult({name:"combinations",status:error.response.status,cause:error.response.data.cause}))
+        dispatch(sys.SetLoading({combinations:false}))
+      }
+    })
+  }
+}
 
 export const GetUser = (id:string) => {
   return async (dispatch:Dispatch) => {
@@ -12,11 +28,10 @@ export const GetUser = (id:string) => {
       dispatch(sys.SetResult({name:"user",status:200,cause:"ok"}))
       dispatch(sys.SetLoading({user:false}))
     }).catch(error =>{
-       console.log(error.response)
-       if (error.response != undefined) {
+       if (error.response) {
         dispatch(sys.SetResult({name:"user",status:error.response.status,cause:error.response.data.cause}))
-        }
         dispatch(sys.SetLoading({user:false}))
+       }
     })
   }
 }
@@ -29,10 +44,10 @@ export const GetCompetition =  (id:number) => {
       dispatch(sys.SetResult({name:"competition",status:200,cause:"ok"}))
       dispatch(sys.SetLoading({competition:false}))
     }).catch(error => {
-      if (error.response != undefined) {
+      if (error.response) {
         dispatch(sys.SetResult({name:"competition",status:error.response.status,cause:error.response.data.cause}))
+        dispatch(sys.SetLoading({competition:false}))
       }
-      dispatch(sys.SetLoading({competition:false}))
     })
   }
 }
@@ -50,10 +65,10 @@ export const GetUserCompetitions = (id:string,page:number,sort:number) => {
       dispatch(sys.SetResult({name:"competitions",status:200,cause:"ok"}))
       dispatch(sys.SetLoading({competitions:false}))
     }).catch(error => {
-      if (error.response != undefined) {
+      if (error.response) {
         dispatch(sys.SetResult({name:"competitions",status:error.response.status,cause:error.response.data.cause}))
+        dispatch(sys.SetLoading({competitions:false}))
       }
-      dispatch(sys.SetLoading({competitions:false}))
     })
   }
 }
@@ -71,10 +86,10 @@ export const GetCompetitions = (page:number,mode:number) => {
       dispatch(sys.SetResult({name:"competitions",status:200,cause:"ok"}))
       dispatch(sys.SetLoading({competitions:false}))
     }).catch(error => {
-      if (error.response != undefined) {
+      if (error.response) {
         dispatch(sys.SetResult({name:"competitions",status:error.response.status,cause:error.response.data.cause}))
+        dispatch(sys.SetLoading({competitions:false}))
       }
-      dispatch(sys.SetLoading({competitions:false}))
     })
   }
 }
@@ -88,11 +103,11 @@ export const GetClubs = (keyword:string) => {
       }
     }).then(res => {
       dispatch(SetClubs(res.data))
-      dispatch(sys.SetResult({name:"club",status:200,cause:"ok"}))
+      dispatch(sys.SetResult({name:"clubs",status:200,cause:"ok"}))
       dispatch(sys.SetLoading({clubs:false}))
     }).catch(error => {
-      if (error.response != undefined) {
-        dispatch(sys.SetResult({name:"club",status:error.response.status,cause:error.response.data.cause}))
+      if (error.response) {
+        dispatch(sys.SetResult({name:"clubs",status:error.response.status,cause:error.response.data.cause}))
       }
       dispatch(sys.SetLoading({clubs:false}))
     })
@@ -107,10 +122,27 @@ export const GetParticipants = (comptition_id:number) => {
       dispatch(sys.SetResult({name:"participants",status:200,cause:"ok"}))
       dispatch(sys.SetLoading({participants:false}))
     }).catch(error => {
-      if (error.response != undefined) {
+      if (error.response) {
         dispatch(sys.SetResult({name:"participants",status:error.response.status,cause:error.response.data.cause}))
+        dispatch(sys.SetLoading({participants:false}))
       }
       dispatch(sys.SetLoading({participants:false}))
+    })
+  }
+}
+
+export const GetParticipantsWithName = (comptition_id:number) => {
+  return async (dispatch:Dispatch) => {
+    dispatch(sys.SetLoading({participants:true}))
+    await client.get(api.API_GET_PARTICIPANTS_WITH_NAME + "/" + comptition_id).then(res =>{
+      dispatch(SetParticipants(res.data))
+      dispatch(sys.SetResult({name:"participants",status:200,cause:"ok"}))
+      dispatch(sys.SetLoading({participants:false}))
+    }).catch(error => {
+      if (error.response) {
+        dispatch(sys.SetResult({name:"participants",status:error.response.status,cause:error.response.data.cause}))
+        dispatch(sys.SetLoading({participants:false}))
+      }
     })
   }
 }
@@ -123,7 +155,7 @@ export const GetComments = (competiton_id:number) => {
       dispatch(sys.SetResult({name:"comments",status:200,cause:"ok"}))
       dispatch(sys.SetLoading({comments:false}))
     }).catch(error => {
-      if (error.response != undefined) {
+      if (error.response) {
         dispatch(sys.SetResult({name:"comments",status:error.response.status,cause:error.response.data.cause}))
       }
       dispatch(sys.SetLoading({comments:false}))
@@ -144,10 +176,127 @@ export const SearchCompetition = (p:number,q:string | null,date:string | null,mo
       dispatch(sys.SetResult({name:"search",status:200,cause:"ok"}))
       dispatch(sys.SetLoading({search:false}))
     }).catch(error =>{
-      if (error.response != undefined) {
+      if (error.response) {
         dispatch(sys.SetResult({name:"search",status:error.response.status,cause:error.response.data.cause}))
+        dispatch(sys.SetLoading({search:false}))
       }
-      dispatch(sys.SetLoading({search:false}))
+    })
+  }
+}
+
+export const PostComments = (data:PostComment) => {
+  return async (dispatch:Dispatch) => {
+    dispatch(sys.SetLoading({comments:true}))
+    await client.post(api.API_POST_COMMENTS,{...data}).then((res => {
+      dispatch(SetComments(res.data.payload))
+      dispatch(sys.SetResult({name:"comments",status:200,cause:res.data.cause}))
+      dispatch(sys.SetLoading({comments:false}))
+      dispatch(sys.SetSnack({status:"success",message:res.data.cause}))
+    })).catch(error => {
+       if (error.response) {
+        dispatch(sys.SetResult({name:"comments",status:error.response.status,cause:error.response.data.cause}))
+        dispatch(sys.SetSnack({status:"error",message:error.response.data.cause}))
+      }
+      dispatch(sys.SetLoading({comments:false}))
+    })
+  }
+}
+
+export const PostPatricipant = (data:PostParticipant) => {
+  return async (dispatch:Dispatch) => {
+    dispatch(sys.SetLoading({participants:true}))
+    await client.post(api.API_POST_PARTICIPANT,{...data}).then((res => {
+      dispatch(SetParticipants(res.data.payload))
+      dispatch(sys.SetResult({name:"participants",status:200,cause:res.data.cause}))
+      dispatch(sys.SetLoading({participants:false}))
+      dispatch(sys.SetSnack({status:"success",message:res.data.cause}))
+    })).catch(error => {
+      if (error.response) {
+        dispatch(sys.SetResult({name:"participants",status:error.response.status,cause:error.response.data.cause}))
+        dispatch(sys.SetSnack({status:"error",message:error.response.data.cause}))
+      }
+    })
+  }
+}
+
+export const PostBundlePatricipant = (data:BundleParticipant) => {
+  return async (dispatch:Dispatch) => {
+    dispatch(sys.SetLoading({participants:true}))
+    await client.post(api.API_BUNDLE_PARTICIPANT,{...data}).then((res) => {
+      dispatch(SetParticipants(res.data.payload))
+      dispatch(sys.SetResult({name:"participants",status:200,cause:res.data.cause}))
+      dispatch(sys.SetLoading({participants:false}))
+      dispatch(sys.SetSnack({status:"success",message:res.data.cause}))
+    }).catch(error => {
+      if (error.response) {
+        dispatch(sys.SetResult({name:"participants",status:error.response.status,cause:error.response.data.cause}))
+        dispatch(sys.SetSnack({status:"error",message:error.response.data.cause}))
+      }
+    })
+  }
+
+}
+
+export const PostCompetitionDate = (data:PostCompetition) => {
+  return async (dispatch:Dispatch) => {
+    await client.post(api.API_POST_COMPETITION,{...data}).then((res)=> {
+      dispatch(sys.SetResult({name:"post_competition",status:200,cause:res.data.cause}))
+      dispatch(sys.SetSnack({status:"success",message:res.data.cause}))
+    }).catch(error => {
+      if (error.response) {
+        dispatch(sys.SetResult({name:"post_competition",status:error.response.status,cause:error.response.data.cause}))
+        dispatch(sys.SetSnack({status:"error",message:error.response.data.cause}))
+      }
+    })
+  }
+}
+
+export const PostRealNameData = (data:PostRealName) => {
+  return async (dispatch:Dispatch) => {
+    dispatch(sys.SetLoading({user:true}))
+    await client.post(api.API_POST_REAL_NAME,{...data}).then((res)=> {
+      dispatch(sys.SetResult({name:"post_real_name",status:200,cause:res.data.cause}))
+      dispatch(sys.SetSnack({status:"success",message:res.data.cause}))
+      dispatch(sys.SetLoading({user:false}))
+    }).catch(error => {
+       if (error.response) {
+        dispatch(sys.SetResult({name:"post_real_name",status:error.response.status,cause:error.response.data.cause}))
+        dispatch(sys.SetSnack({status:"error",message:error.response.data.cause}))
+        dispatch(sys.SetLoading({user:false}))
+       }
+    })
+  }
+}
+
+export const PostCombinationData = (data:BundleCombination) => {
+  return async (dispatch:Dispatch) => {
+    dispatch(sys.SetLoading({combinations:true}))
+    await client.post(api.API_POST_COMBINATIONS,{...data}).then(res => {
+      dispatch(SetCombinations(res.data.payload))
+      dispatch(sys.SetResult({name:"post_combinations",status:200,cause:res.data.cause}))
+      dispatch(sys.SetSnack({status:"success",message:res.data.cause}))
+      dispatch(sys.SetLoading({combinations:false}))
+    }).catch(error =>{
+      if (error.response) {
+        dispatch(sys.SetResult({name:"post_combinations",status:error.response.status,cause:error.response.data.cause}))
+        dispatch(sys.SetSnack({status:"error",message:error.response.data.cause}))
+        dispatch(sys.SetLoading({combinations:false}))
+      }
+    })
+  }
+
+}
+
+export const DeleteCompetition = (id:number) => {
+  return async (dispatch:Dispatch) => {
+    await client.delete(api.API_DELETE_COMPETITION + "/" + id ).then((res) =>{
+      dispatch(sys.SetResult({name:"delete_competition",status:200,cause:res.data.cause}))
+      dispatch(sys.SetSnack({status:"success",message:res.data.cause}))
+    }).catch(error=> { 
+      if (error.response) {
+        dispatch(sys.SetResult({name:"delete_competition",status:error.response.status,cause:error.response.data.cause}))
+        dispatch(sys.SetSnack({status:"error",message:error.response.data.cause}))
+      }
     })
   }
 }

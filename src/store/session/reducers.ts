@@ -16,6 +16,12 @@ const Reducer = (state:types.Session = initstate,actions:types.SessionAction):ty
       return {
         ...state,auth:actions.payload
       }
+    case types.DELETE_SESSION:
+      return {
+        ...state,
+        auth:{} as User,
+        login: false
+    }
     default:
       return state
   }

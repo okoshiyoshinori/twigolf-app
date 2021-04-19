@@ -39,7 +39,7 @@ let theme = createMuiTheme({
     },
     h1: {
       fontWeight:700,
-      fontSize:"1.4rem",
+      fontSize:"1.6rem",
 //      color:"#2a2b52"
     },
     h2: {
@@ -109,8 +109,8 @@ let theme = createMuiTheme({
     },
     MuiTabs: {
       indicator: {
-        backgroundColor:"#0069c0"
-      }
+        backgroundColor:"#0069c0",
+      },
     },
     MuiTab: {
       root: {
@@ -119,6 +119,11 @@ let theme = createMuiTheme({
           fontWeight: 700,
           color: "#0069c0"
         }
+      }
+    },
+    MuiTableCell: {
+      root: {
+          borderBottomColor: colors.grey[300]
       }
     },
     MuiRadio: {

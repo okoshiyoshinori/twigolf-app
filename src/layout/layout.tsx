@@ -2,8 +2,9 @@ import React from 'react'
 import {Route} from 'react-router-dom'
 import {withRouter,RouteComponentProps,Switch} from 'react-router-dom'
 import Menu from '../components/menu'
-import {Container,Theme,Grid,Hidden} from '@material-ui/core'
+import {Container,Theme,Grid,Hidden,Snackbar,SnackbarContent} from '@material-ui/core'
 import {createStyles,withStyles,WithStyles} from '@material-ui/styles'
+import Alert from '@material-ui/lab/Alert'
 import All from '../page/all'
 import Search from '../page/search'
 import Guid from '../page/guid'
@@ -13,12 +14,17 @@ import Events from '../page/event'
 import Dm from '../page/dm'
 import Config from '../page/config'
 import Detail from '../page/detail'
+import PaManagement from '../page/pa_management'
+import CompeManagement from '../page/compe_management'
+import PrivateRoute from '../page/privateRoute'
 import BottomNavi from '../components/bottomNavi'
 import TopBar from '../components/TopBar'
 import {RootState} from '../store'
 import {Dispatch} from 'redux'
 import {connect} from 'react-redux'
 import {GetSession,LogOut} from '../store/session/api'
+import {ResetSnack} from '../store/system/actions'
+import {snackStatus} from '../store/system/types'
 
 interface Props extends ReduxProps,RouteComponentProps,WithStyles<typeof styles>{}
 type State = {}
@@ -26,7 +32,7 @@ type State = {}
 const styles = (theme:Theme) => createStyles({
   container: {
     [theme.breakpoints.down("sm")]: {
-      marginBottom:"100px"
+      marginBottom:"100px",
     }
   },
   root: {
@@ -50,32 +56,62 @@ class Layout extends React.Component<Props,State> {
   logouthandler(){
     this.props.logOut()
   }
+  getColor(d:snackStatus):string {
+    switch (d){
+      case null:
+        return ""
+      case "success":
+        return "green"
+      case "info":
+        return "blue"
+      case "error":
+        return "red"
+      case "warning":
+        return "orange"
+      defalt:
+        return "greeen"
+    }
+  }
   render() {
-    const {classes,session} = this.props
+    const {classes,session,system} = this.props
+    const snackColor =  this.getColor(system.snack.status)
     return (
     <div>
       <Container maxWidth={"lg"} className={classes.container}>
         <div className={classes.toolbar}/>
         <TopBar session={session} handler={()=>this.logouthandler()}/>
-        <Grid container className={classes.root} direction="row" justify="flex-start" spacing={5}>
+        <Grid container className={classes.root} direction="row" justify="center" spacing={4} >
           <Hidden smDown >
             <Grid  md={3} item>
               <Menu session={session}/>
             </Grid>
           </Hidden>
-          <Grid sm={12} md={7} item>
-              <Route  path="/users/:snsid" component={Plan} />
-              <Route  path="/myevents" component={Events} />
-              <Route  path="/creation" component={Editing} />
+          <Grid xs={12} sm={12} md={7} item>
+            <Switch>
+              <Route exact path="/users/:snsid" component={Plan} />
               <Route exact path="/events" component={All} />
-              <Route  path="/events/:id" component={Detail} />
-              <Route  path="/search" component={Search} />
-              <Route  path="/guid" component={Guid} />
-              <Route  path="/dm" component={Dm} />
-              <Route  path="/config" component={Config} />
+              <Route exact path="/events/:id" component={Detail} />
+              <Route exact path="/search" component={Search} />
+              <Route exact path="/guid" component={Guid} />
+              <Route exact path="/dm" component={Dm} />
+              <PrivateRoute  path="/config" component={Config} auth="/events" />
+              <PrivateRoute  path="/creation" component={Editing} auth="/events" />
+              <PrivateRoute  path="/pa_management" component={PaManagement} auth="/events" />
+              <PrivateRoute  path="/compe_management" component={CompeManagement} auth="/events" />
+            </Switch>
           </Grid>
+          <Hidden smDown >
+            <Grid  md={2} item>
+            </Grid>
+          </Hidden>
         </Grid>
      </Container>
+     <Snackbar open={system.snack.status !== null ? true:false} autoHideDuration={3000}
+     onClose={() => this.props.resetSnack()} anchorOrigin={{horizontal: 'center',vertical:'top'}}>
+     <Alert severity={system.snack.status !== null ? system.snack.status : "info"}>
+      {system.snack.message}
+      </Alert>
+     </Snackbar>
      <Hidden smUp>
           <BottomNavi session={session} />
           </Hidden>
@@ -87,6 +123,7 @@ class Layout extends React.Component<Props,State> {
 const  mapStateToProps = (state:RootState) => {
   return  {
     session:state.session,
+    system:state.system
   }
 }
 
@@ -97,6 +134,9 @@ const mapDispatchToProps = (dispatch:Dispatch) => {
     },
     logOut() {
       LogOut()(dispatch)
+    },
+    resetSnack() {
+      dispatch(ResetSnack())
     }
   }
 }

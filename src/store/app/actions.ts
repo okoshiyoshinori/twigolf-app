@@ -35,6 +35,13 @@ export const SetParticipants = (data:app.Participant[]):app.AppAction => {
   }
 } 
 
+export const SetCombinations = (data:app.Combination[]):app.AppAction => {
+  return {
+    type:app.SET_COMBINATIONS,
+    payload:data
+  }
+}
+
 export const SetClubs = (data:app.Club[]):app.AppAction => {
   return {
     type:app.SET_CLUBS,
