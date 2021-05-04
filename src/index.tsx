@@ -14,7 +14,7 @@ ReactDOM.render(
    <Router>
     <App> 
       <Route exact path="/" component={Top}></Route>
-      <Route path={["/users/:snsid","/events","/events/:id","/search","/guid","/dm","/config","/creation","/pa_management","/compe_management"]}  component={Layout}/>
+      <Route path={["/users/:snsid","/events","/events/:id","/search","/guid","/dm","/config","/creation","/pa_management","/compe_management","/combinations/:cid"]}  component={Layout}/>
     </App>
    </Router>
    </Provider>

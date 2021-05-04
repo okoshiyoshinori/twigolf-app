@@ -7,7 +7,7 @@ export interface AppState {
   comments:Comment[],
   searchresult: FetchResult,
   user:User,
-  combinations:Combination[],
+  combinations:GetCombination,
 }
 
 
@@ -28,6 +28,7 @@ export interface Competition {
   event_day:Date,
   event_deadline:Date,
   keyword:string,
+  combination_open:boolean
   user:User,
   club:Club,
   update_at:Date
@@ -47,6 +48,8 @@ export interface User {
   screen_name:string,
   real_name:string,
   real_name_kana:string,
+  sex:number,
+  birthday:Date,
   avatar:string,
   login_type:string,
   description:string,
@@ -83,7 +86,13 @@ export interface Combination {
   update_at:Date | null,
 } 
 
+export interface GetCombination {
+  combination_open:boolean
+  payload:Combination[]
+}
+
 export interface BundleCombination {
+  open: boolean 
   transaction: Combination[]
 }
 
@@ -123,6 +132,8 @@ export interface PostRealName {
   id:number,
   real_name: string,
   real_name_kana: string
+  sex:number,
+  birthday:Date
 }
 
 
@@ -172,7 +183,7 @@ export interface SetClubAction {
 
 export interface SetCombinationAction {
   type: typeof SET_COMBINATIONS,
-  payload: Combination[]
+  payload: GetCombination 
 }
 
 export type AppAction = SetCompetitionAction | SetCompetitionsAction | SetCommentsAction | 

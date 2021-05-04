@@ -2,6 +2,7 @@ import React from 'react'
 import {Redirect,Route,RouteComponentProps,withRouter,RouteProps} from 'react-router-dom'
 import {connect} from 'react-redux'
 import {RootState} from '../store'
+import Progress from '../components/progress'
 
 interface Props extends ReduxProps,RouteComponentProps {
   path:string,
@@ -14,11 +15,15 @@ class PrivateRoute extends React.Component<Props,{}> {
     super(props)
   }
   render() {
-    const {session} = this.props
-    if (session.login) {
-      return (<Route exact path={this.props.path} component={this.props.component}/>)
+    const {session,system} = this.props
+    if (!system.loading.session) {
+      if (session.login) {
+        return (<Route exact path={this.props.path} component={this.props.component}/>)
+      } else {
+        return (<Redirect to={this.props.auth}/>)
+      }
     } else {
-      return (<Redirect to={this.props.auth}/>)
+      return (<Progress/>)
     }
   }
 }
@@ -26,7 +31,8 @@ class PrivateRoute extends React.Component<Props,{}> {
 
 const mapStateToProps = (state:RootState) => {
   return {
-    session:state.session
+    session:state.session,
+    system:state.system
   }
 }
 

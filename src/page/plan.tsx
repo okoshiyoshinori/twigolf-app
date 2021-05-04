@@ -2,8 +2,9 @@ import React from 'react'
 import {RouteComponentProps,withRouter} from 'react-router-dom'
 import {withStyles,WithStyles,createStyles} from '@material-ui/styles'
 import {Theme,Divider,Paper} from '@material-ui/core'
-import {Box,Container,Button,List,ListItem,ListItemAvatar,ListItemText,Avatar,Grid,Tabs,Tab,Card,Typography} from '@material-ui/core'
+import {colors,Menu,MenuItem,Box,Container,Button,List,ListItem,ListItemAvatar,ListItemText,Avatar,Grid,Tabs,Tab,Card,Typography} from '@material-ui/core'
 import EventList from '../components/eventlist'
+import EventCard from '../components/EventCard'
 import {User} from '../store/app/types'
 import {GetUser,GetUserCompetitions} from '../store/app/api'
 import Progress from '../components/progress'
@@ -28,13 +29,14 @@ interface Props extends ReduxType,RouteComponentProps<MatchParams>,WithStyles<ty
 type State = {
   tabIndex:number
   page:number
+  anchorEl:HTMLElement | null
 }
 
 const styles = (theme:Theme) => createStyles({
   root: {
   },
   paper: {
-    padding:"10px",
+    padding:"15px",
     borderRadius: "10px"
   },
   link: {
@@ -61,7 +63,12 @@ const styles = (theme:Theme) => createStyles({
 class Plan extends React.Component<Props,State> {
   constructor(props:Props) {
     super(props)
-    this.state = this.parseQuery(this.props)
+    const {tabIndex,page} = this.parseQuery(this.props)
+    this.state = {
+      tabIndex:tabIndex,
+      page:page,
+      anchorEl:null
+    }
   }
   componentDidMount() {
     this.props.getUserCompetitions(this.props.match.params.snsid,this.state.page,this.state.tabIndex)
@@ -73,29 +80,52 @@ class Plan extends React.Component<Props,State> {
       search:`?p=1&sort=${val}`
     })
   }
+  handleClose() {
+    this.setState({
+      anchorEl:null
+    })
+  }
+  handleLink(link:string) {
+    this.props.history.push(link)
+  }
+  handlePopUp(e:React.MouseEvent<HTMLElement>) {
+    e.stopPropagation()
+    this.setState({
+      anchorEl:e.currentTarget
+    })
+  }
   handelePage(page:number) {
     this.setState({page:page})
     this.props.history.push({
       search: `?p=${page}&sort=${this.state.tabIndex}`
     })
   }
-  parseQuery(props:Props):State {
+  parseQuery(props:Props):any {
     const parse = querystring.parse(props.location.search)
     return {
-      tabIndex:parse.sort === undefined ? 1: Number(parse.sort),
-      page:parse.p === undefined ? 1: Number(parse.p)
+      tabIndex:parse.sort == undefined ? 1: Number(parse.sort),
+      page:parse.p == undefined ? 1: Number(parse.p)
     }
   }
   componentWillUnmount() {
     this.props.resetLog()
   }
   componentDidUpdate(PrevProps:Props) {
-    if (this.props.location.search !== PrevProps.location.search) {
+    if ( this.props.location.search != PrevProps.location.search) {
       const {page,tabIndex} = this.parseQuery(this.props)
       this.setState({
         tabIndex:tabIndex,
         page:page
       })
+      this.props.getUserCompetitions(this.props.match.params.snsid,page,tabIndex)
+    }
+    if (this.props.location.pathname != PrevProps.location.pathname ) {
+      const {page,tabIndex} = this.parseQuery(this.props)
+      this.setState({
+        tabIndex:tabIndex,
+        page:page
+      })
+      this.props.getUser(this.props.match.params.snsid)
       this.props.getUserCompetitions(this.props.match.params.snsid,page,tabIndex)
     }
   }
@@ -104,14 +134,15 @@ class Plan extends React.Component<Props,State> {
     const {tabIndex} = this.state
     const competitionsResult = SearchLog(system.result,"competitions")
     const userResult = SearchLog(system.result,"user")
-    const mypage = user.sns_id == session.auth.sns_id ? true:false
+    const mypage = user.id == session.auth.id ? true:false
     const allPage:number = Math.ceil(competitions.allNumber/Number(process.env.REACT_APP_PERNUM))
+    if (userResult.status != 200 && userResult.status != 999 ) { return ( <Message mes={userResult.cause}/> )}
     return (
-    <Grid container direction="row" justify="flex-start" spacing={2} >
+    <>
+    <Grid container direction="row" justify="flex-start" spacing={1} >
+     {userResult.status == 200 && !system.loading.user &&
+     <>
       <Grid item xs={12} sm={12}>
-            {userResult.status != 200 && userResult.status != 999 && <Message mes={userResult.cause}/>}
-            {userResult.status == 200 && !system.loading.user &&
-      <>
       <div className="Plan">
         <Helmet>
          <title>{user.screen_name}さんのマイページ</title>
@@ -124,11 +155,16 @@ class Plan extends React.Component<Props,State> {
           <List>
             <ListItem style={{padding:0}} alignItems="flex-start">
               <ListItemAvatar style={{minWidth:50}}> 
-                <Avatar src={process.env.PUBLIC_URL + "/nanahara.jpg"} aria-label="event" className={classes.avatar}/>
+                <Avatar src={process.env.PUBLIC_URL + "/" + user.avatar} aria-label="event" className={classes.avatar}/>
               </ListItemAvatar> 
               <ListItemText 
-                  primary={<Typography variant="body2">{user.sns_id}</Typography>}
-                  secondary={<Typography variant="body2">{user.description}</Typography>}/>
+                  primary={<Typography variant="caption" style={{color:"#000"}}>{user.screen_name}</Typography>}
+                  secondary={
+                    <>
+                    <Typography variant="caption" component="p" style={{color:"#000"}}>@{user.sns_id}</Typography>
+                    <Typography variant="caption" component="p" style={{color:"#444"}}>{user.description}</Typography>
+                    </>
+                    }/>
               </ListItem>
           </List>
           {!mypage &&
@@ -137,7 +173,7 @@ class Plan extends React.Component<Props,State> {
           </Box>
           }
           {mypage &&  
-          <Box display="flex" flexDirection="row" justifyContent="left" style={{marginTop:15}}>
+          <Box display="flex" flexDirection="row" justifyContent="left">
             <Button variant="text" size="medium"  onClick={()=> this.props.history.push("/creation")} disableElevation  
                style={{fontWeight:700}} color="primary" >
                 イベント作成
@@ -149,37 +185,46 @@ class Plan extends React.Component<Props,State> {
           </Box>
           }
         </Paper>
-            </>
-        }
     </Grid>
-    <Grid item xs={12} sm={12}>
-     <Paper variant="outlined" className={classes.paper} style={{paddingBottom:0}}>
-      <Tabs 
+    <Grid item xs={12} sm={12} style={{marginBottom:15,marginTop:15}}>
+      <Tabs style={{borderBottom:"1px solid #dcdcdc"}} 
         value={tabIndex}
-        textColor="inherit"
-        variant="fullWidth"
+        variant="standard"
         centered
         onChange={(e,val)=> this.handeleChange(e,val)}>
-              <Tab label="今後" style={{fontSize:15}} value={1} />
-              <Tab label="過去" style={{fontSize:15}} value={2} />
-              <Tab label="未定" style={{fontSize:15}} value={3} />
+              <Tab label="今 後" value={1} />
+              <Tab label="過 去" value={2} />
+              <Tab label="未 定" value={3} />
       </Tabs>
-     </Paper>
     </Grid>
    {competitionsResult.status != 200 && competitionsResult.status != 999  && <Message mes={competitionsResult.cause}/>}
    {competitionsResult.status == 200 && !system.loading.competitions &&
     <>
+    { competitions.payload.map((data) => (
      <Grid item xs={12} sm={12}>
-       <Paper variant="outlined">
-         <EventList data={competitions.payload} session={session} />
-       </Paper>
+      <EventCard data={data} session={session} handler={this.handlePopUp.bind(this)} />
      </Grid>
+     ))}
      <Grid item xs={12} sm={12} md={12}>
         <Pagination shape="rounded" page={this.state.page} onChange={(e,p) => this.handelePage(p)} count={allPage} boundaryCount={5}/>
      </Grid>
      </>
-   } 
+    } 
+    </>
+   }
     </Grid>
+    <Menu 
+       keepMounted
+       anchorEl={this.state.anchorEl}
+       open={Boolean(this.state.anchorEl)}
+       onClose={(e) => this.handleClose()}
+       id="menu"
+     >
+       <MenuItem onClick={() => this.handleLink("/creation?cid=" + this.state.anchorEl?.getAttribute("data-id")) }>編集</MenuItem>
+       <MenuItem onClick={() => this.handleLink("/pa_management?cid=" + this.state.anchorEl?.getAttribute("data-id")) } >参加管理</MenuItem>
+       <MenuItem onClick={() => this.handleLink("/compe_management?cid=" + this.state.anchorEl?.getAttribute("data-id")) } >ペアリング</MenuItem>
+    </Menu>
+    </>
     )
   }
 }

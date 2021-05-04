@@ -142,7 +142,7 @@ class PaManagement extends React.Component<Props,State> {
             </div>
           <Grid item xs={12} sm={12}>
            <Typography variant="h1" style={{marginBottom:"10px"}}>
-              参加者管理
+              参加管理
             </Typography>
             <Typography variant="caption">
                参加者の削除など主催者権限で参加状況の変更をすることができます。

@@ -35,7 +35,7 @@ export const SetParticipants = (data:app.Participant[]):app.AppAction => {
   }
 } 
 
-export const SetCombinations = (data:app.Combination[]):app.AppAction => {
+export const SetCombinations = (data:app.GetCombination):app.AppAction => {
   return {
     type:app.SET_COMBINATIONS,
     payload:data

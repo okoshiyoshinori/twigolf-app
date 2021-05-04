@@ -25,6 +25,8 @@ export interface Loading {
   search:boolean
   user:boolean
   combinations:boolean
+  session:boolean
+  excel:boolean
 }
 
 export type snackStatus = "error" | "warning" | "info" | "success" | null
@@ -36,6 +38,10 @@ export interface SnackData {
 
 export interface UserLoading {
   user:boolean
+}
+
+export interface ExcelLoading {
+  excel:boolean
 }
 
 export interface CompetitionLoading {
@@ -66,8 +72,12 @@ export interface CombinationLoading {
   combinations:boolean
 }
 
+export interface SessionLoading {
+  session:boolean
+}
+
 export type NowLoading = CompetitionLoading | CompetitionsLoading | ClubLoading | ParticipantsLoading | CommentsLoading |
-    SearchLoading | UserLoading | CombinationLoading
+    SearchLoading | UserLoading | CombinationLoading | SessionLoading | ExcelLoading
 
 export interface SetLoading {
   type:typeof SET_LOADING,

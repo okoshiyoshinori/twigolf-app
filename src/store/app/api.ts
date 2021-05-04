@@ -1,11 +1,29 @@
 import client, * as api  from '../../api/'
 import {Dispatch} from 'redux'
+import {saveAs} from 'file-saver'
 import {SetCombinations,SetCompetition,SetUser,SetCompetitions,SetClubs,SetComments,SetParticipants,SetSearchResult} from './actions'
 import * as sys from '../system/actions' 
-import {BundleCombination,BundleParticipant,PostParticipant,PostComment,PostCompetition,PostRealName} from '../app/types'
+import {BundleCombination,FetchResult,Competition,User,BundleParticipant,PostParticipant,PostComment,PostCompetition,PostRealName,GetCombination} from '../app/types'
 
-export const GetCombination = (cid:number) => {
+
+export const GetExcel = (cid:number) => {
   return async (dispatch:Dispatch) => {
+    dispatch(sys.SetLoading({excel:true}))
+    await client.get(api.API_GET_EXCEL + "/" + cid,{responseType:"blob"}).then(res => {
+      const data = new Blob([res.data],{type:res.data.type})
+      saveAs(data,"組み合わせ表.xlsx")
+      dispatch(sys.SetLoading({excel:false}))
+    }).catch(error =>{
+      if (error.response) {
+        sys.SetSnack({status:"error",message:error.response.data.cause})
+        dispatch(sys.SetLoading({excel:false}))
+      }
+    })
+  }
+}
+export const GetCombinationData = (cid:number) => {
+  return async (dispatch:Dispatch) => {
+    dispatch(SetCombinations({} as GetCombination ))
     dispatch(sys.SetLoading({combinations:true}))
     await client.get(api.API_GET_COMBINATIONS + "/" + cid).then(res => {
       dispatch(SetCombinations(res.data))
@@ -22,6 +40,7 @@ export const GetCombination = (cid:number) => {
 
 export const GetUser = (id:string) => {
   return async (dispatch:Dispatch) => {
+    dispatch(SetUser({} as User))
     dispatch(sys.SetLoading({user:true}))
     await client.get(api.API_USER + "/" + id).then(res => {
       dispatch(SetUser(res.data))
@@ -38,6 +57,7 @@ export const GetUser = (id:string) => {
 
 export const GetCompetition =  (id:number) => {
   return async (dispatch:Dispatch) => {
+    dispatch(SetCompetition({} as Competition))
     dispatch(sys.SetLoading({competition:true}))
     await client.get(api.API_COMPETITION + "/" + id).then(res => {
       dispatch(SetCompetition(res.data))
@@ -54,6 +74,7 @@ export const GetCompetition =  (id:number) => {
 
 export const GetUserCompetitions = (id:string,page:number,sort:number) => {
   return async (dispatch:Dispatch) => {
+    dispatch(SetCompetitions({} as FetchResult))
     dispatch(sys.SetLoading({competitions:true}))
     await client.get(api.API_USER_COMPETITIONS + "/" + id,{
       params: {
@@ -75,6 +96,7 @@ export const GetUserCompetitions = (id:string,page:number,sort:number) => {
 
 export const GetCompetitions = (page:number,mode:number) => {
   return async (dispatch:Dispatch) => {
+    dispatch(SetCompetitions({} as FetchResult))
     dispatch(sys.SetLoading({competitions:true}))
     await client.get(api.API_COMPETITION,{
       params: {
@@ -96,6 +118,7 @@ export const GetCompetitions = (page:number,mode:number) => {
 
 export const GetClubs = (keyword:string) => {
   return async (dispatch:Dispatch) => {
+    dispatch(SetClubs([]))
     dispatch(sys.SetLoading({clubs:true}))
     await client.get(api.API_CLUBS,{
       params :{
@@ -116,6 +139,7 @@ export const GetClubs = (keyword:string) => {
 
 export const GetParticipants = (comptition_id:number) => {
   return async (dispatch:Dispatch) => {
+    dispatch(SetParticipants([]))
     dispatch(sys.SetLoading({participants:true}))
     await client.get(api.API_PARTICIPANTS + "/" + comptition_id).then(res =>{
       dispatch(SetParticipants(res.data))
@@ -133,6 +157,7 @@ export const GetParticipants = (comptition_id:number) => {
 
 export const GetParticipantsWithName = (comptition_id:number) => {
   return async (dispatch:Dispatch) => {
+    dispatch(SetParticipants([]))
     dispatch(sys.SetLoading({participants:true}))
     await client.get(api.API_GET_PARTICIPANTS_WITH_NAME + "/" + comptition_id).then(res =>{
       dispatch(SetParticipants(res.data))
@@ -149,6 +174,7 @@ export const GetParticipantsWithName = (comptition_id:number) => {
 
 export const GetComments = (competiton_id:number) => {
   return async (dispatch:Dispatch) => {
+    dispatch(SetComments([]))
     dispatch(sys.SetLoading({comments:true}))
     await client.get(api.API_COMMENTS + "/" + competiton_id).then(res => {
       dispatch(SetComments(res.data))
@@ -165,6 +191,7 @@ export const GetComments = (competiton_id:number) => {
 
 export const SearchCompetition = (p:number,q:string | null,date:string | null,mode:number) => {
   return async (dispatch:Dispatch) => {
+    dispatch(SetSearchResult({} as FetchResult))
     dispatch(sys.SetLoading({search:true}))
     await client.get(api.API_SEARCH,{params:{
       p:p,
@@ -197,7 +224,6 @@ export const PostComments = (data:PostComment) => {
         dispatch(sys.SetResult({name:"comments",status:error.response.status,cause:error.response.data.cause}))
         dispatch(sys.SetSnack({status:"error",message:error.response.data.cause}))
       }
-      dispatch(sys.SetLoading({comments:false}))
     })
   }
 }
@@ -240,11 +266,11 @@ export const PostBundlePatricipant = (data:BundleParticipant) => {
 export const PostCompetitionDate = (data:PostCompetition) => {
   return async (dispatch:Dispatch) => {
     await client.post(api.API_POST_COMPETITION,{...data}).then((res)=> {
-      dispatch(sys.SetResult({name:"post_competition",status:200,cause:res.data.cause}))
+      dispatch(sys.SetResult({name:"competitions",status:200,cause:res.data.cause}))
       dispatch(sys.SetSnack({status:"success",message:res.data.cause}))
     }).catch(error => {
       if (error.response) {
-        dispatch(sys.SetResult({name:"post_competition",status:error.response.status,cause:error.response.data.cause}))
+        dispatch(sys.SetResult({name:"competitions",status:error.response.status,cause:error.response.data.cause}))
         dispatch(sys.SetSnack({status:"error",message:error.response.data.cause}))
       }
     })
@@ -254,7 +280,7 @@ export const PostCompetitionDate = (data:PostCompetition) => {
 export const PostRealNameData = (data:PostRealName) => {
   return async (dispatch:Dispatch) => {
     dispatch(sys.SetLoading({user:true}))
-    await client.post(api.API_POST_REAL_NAME,{...data}).then((res)=> {
+    await client.post(api.API_POST_BASIC_INFO,{...data}).then((res)=> {
       dispatch(sys.SetResult({name:"post_real_name",status:200,cause:res.data.cause}))
       dispatch(sys.SetSnack({status:"success",message:res.data.cause}))
       dispatch(sys.SetLoading({user:false}))
@@ -268,17 +294,17 @@ export const PostRealNameData = (data:PostRealName) => {
   }
 }
 
-export const PostCombinationData = (data:BundleCombination) => {
+export const PostCombinationData = (data:BundleCombination,cid:number) => {
   return async (dispatch:Dispatch) => {
     dispatch(sys.SetLoading({combinations:true}))
-    await client.post(api.API_POST_COMBINATIONS,{...data}).then(res => {
-      dispatch(SetCombinations(res.data.payload))
-      dispatch(sys.SetResult({name:"post_combinations",status:200,cause:res.data.cause}))
+    await client.post(api.API_POST_COMBINATIONS + "/" + cid,{...data}).then(res => {
+      dispatch(SetCombinations(res.data))
+      dispatch(sys.SetResult({name:"combinations",status:200,cause:res.data.cause}))
       dispatch(sys.SetSnack({status:"success",message:res.data.cause}))
       dispatch(sys.SetLoading({combinations:false}))
     }).catch(error =>{
       if (error.response) {
-        dispatch(sys.SetResult({name:"post_combinations",status:error.response.status,cause:error.response.data.cause}))
+        dispatch(sys.SetResult({name:"combinations",status:error.response.status,cause:error.response.data.cause}))
         dispatch(sys.SetSnack({status:"error",message:error.response.data.cause}))
         dispatch(sys.SetLoading({combinations:false}))
       }

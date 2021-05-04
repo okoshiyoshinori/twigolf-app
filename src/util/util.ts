@@ -78,16 +78,41 @@ export const getAvatar = (data:Participant[],uid:number | null):string => {
   return ""
 }
 
+export const getSex = (data:number):string => {
+  if (data == undefined) return ""
+  if (data == 1) {
+    return "男性"
+  }else{
+    return "女性"
+  } 
+}
+
+export const getSexNumber = (data:Participant[] | null,uid:number | null):number => {
+  if (data == null) return 0
+  if (uid == null) return 0
+  let result = data.find((v) => v.user_id == uid)
+  if (result != undefined) {
+    return result.user.sex == null ? 0: result.user.sex
+  }
+  return 0
+}
+
+
+export const getAge = (data:Date):string => {
+  if (data == undefined) return ""
+  const today = dayEditor()
+  const birth = dayEditor(data)
+  const base = today.year() - birth.year()
+  const thisBirth = dayEditor(`${today.year()}-${birth.month()}-${birth.date()}`)
+  return today.isBefore(thisBirth) ? base-1 + "歳": base + "歳"
+}
+
 export const getName = (data:Participant[],uid:number | null):string => {
-  if (uid == null) return ""
+  if (uid == null) return "-"
   let result = data.find((v) => v.user_id === uid) 
   if (result != undefined) {
-    if (result.user.real_name == null || result.user.real_name == "") {
       return result.user.screen_name
-    } else {
-      return result.user.real_name
-    }
   } else {
-    return ""
+    return "-"
   }
 }

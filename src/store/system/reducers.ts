@@ -11,6 +11,8 @@ const initState:types.SystemState = {
     search:false,
     user:false,
     combinations:false,
+    session:false,
+    excel:false
   },
   snack:{
     status:null,

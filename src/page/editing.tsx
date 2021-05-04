@@ -32,7 +32,7 @@ type keyData = {
 type Element = any
 
 interface State{
-  cid:string
+  cid:number
   club_keyword:string
   open:boolean
   keywords: keyData[] 
@@ -138,7 +138,7 @@ class New extends React.Component<Props,State>{
   constructor(props:Props) {
     super(props)
     this.state = {
-      cid:"0",
+      cid:0,
       club_keyword:"",
       open:false,
       keywords: [], 
@@ -193,36 +193,35 @@ class New extends React.Component<Props,State>{
       }
     }
   }
-  queryParse():string {
+  queryParse():number {
     const parse = querystring.parse(this.props.location.search)
-    return parse.cid == undefined ? "0": parse.cid as string
+    return parse.cid == undefined ? 0: Number(parse.cid)
   }
   componentWillUnmount() {
     this.props.resetLog()
   }
   componentDidMount() {
-    const {input} = this.state
     let cid = this.queryParse()
-    if (cid == "0") {
+    if (cid == 0) {
       return
     }
-    this.props.getCompetition(Number(cid))
+    this.props.getCompetition(cid)
   }
   componentDidUpdate(ProveProps:Props) {
-    if (this.props.competition !== ProveProps.competition) {
+    if (this.props.competition != ProveProps.competition) {
         const {competition} = this.props
-        let cid = this.queryParse()
+        let cid = this.props.competition.id == undefined ? 0: this.props.competition.id
         const {input} = this.state
         let tempKey:keyData[] = [] as keyData[]
         let i:number = 0
         //キーワード
-      if (competition.keyword !== null) {
+      if (competition.keyword != null) {
         let t = competition.keyword.split(',')
         t.map((v:string) =>{
         tempKey.push({key:i,word:v})
         i++
-      })
-    }
+        })
+      }
       this.setState({
         cid:cid,
         keywords: tempKey,
@@ -388,7 +387,7 @@ class New extends React.Component<Props,State>{
      return
    }
    let data:PostCompetition = {
-     id:Number(this.state.cid),
+     id:this.state.cid,
      title:input.title.value,
      contents:input.detail.value,
      capacity:input.capacity.value == 0 ? null:input.capacity.value,
@@ -448,15 +447,15 @@ class New extends React.Component<Props,State>{
      <Grid container spacing={3}> 
       <div className="New">
         <Helmet>
-         <title>{cid == "0" ? "イベント作成":"イベント編集"}</title>
+         <title>{cid == 0 ? "イベント作成":"イベント編集"}</title>
         </Helmet>
       </div>
       <Grid item xs={12} sm={12}>
         <Typography variant="h1">
-        { cid == "0" && 
+        { cid == 0 && 
          <span> イベントを作成する</span>
         }
-        { cid !== "0" &&
+        { cid != 0 &&
          <span> イベントを編集する</span>
          }
          </Typography>
@@ -656,9 +655,9 @@ class New extends React.Component<Props,State>{
            </Grid>
            <Grid item xs={12} sm={12}>
             <Button disableElevation onClick={()=>this.send()}size="medium" style={{color:"#fff",fontWeight:700}} variant="contained" color="primary">
-            {cid == "0" ? "登録する":"更新する"}
+            {cid == 0 ? "登録する":"更新する"}
             </Button>
-            {cid != "0" && 
+            {cid != 0 && 
             <Button disableElevation onClick={()=>this.delete(Number(cid))}size="medium" style={{color:"#fff",fontWeight:700,marginLeft:15}} variant="contained" color="secondary">
               削除する 
             </Button>

@@ -38,19 +38,25 @@ let theme = createMuiTheme({
       textTransform: "none"
     },
     h1: {
-      fontWeight:700,
+     // fontWeight:700,
       fontSize:"1.6rem",
 //      color:"#2a2b52"
     },
     h2: {
-      fontWeight:700,
-      fontSize:"1rem",
+    //  fontWeight:700,
+      fontSize:"1.3rem",
  //     color:"#2a2b52"
     },
     h3: {
-      fontWeight:600,
-      fontSize:"0.9rem",
+    //  fontWeight:600,
+      fontSize:"1.0rem",
   //    color:"#2a2b52"
+    },
+    h4: {
+      fontSize:"0.8rem"
+    },
+    h5: {
+      fontSize:"0.6rem"
     }
   },
   palette: {
@@ -108,16 +114,19 @@ let theme = createMuiTheme({
       }
     },
     MuiTabs: {
+      root:{
+        fontWeight:800,
+        color:colors.blueGrey[500]
+       },
       indicator: {
-        backgroundColor:"#0069c0",
+        backgroundColor:colors.grey[800],
       },
     },
     MuiTab: {
       root: {
-        color:"#000000",
+        fontSize:"1.3rem",
         '&$selected': {
-          fontWeight: 700,
-          color: "#0069c0"
+          color: colors.grey[800] 
         }
       }
     },
@@ -133,6 +142,11 @@ let theme = createMuiTheme({
           color: colors.blue[700]
         }
       }
+    },
+    MuiCardHeader: {
+      avatar:{
+        marginRight:10,
+      }
     }
   }
 })
@@ -140,50 +154,6 @@ theme = responsiveFontSizes(theme)
 type State = {}
 interface Props extends RouteComponentProps,WithStyles<typeof styles>{}
 const styles = (them:Theme) => createStyles({
-  content: {
-    flexGrow:1,
-    [theme.breakpoints.up("sm")]: {
-      marginLeft:240
-    },
-    padding: theme.spacing(3),
-  },
-  main: {
-    [theme.breakpoints.up("sm")]: {
-      borderRightColor: theme.palette.divider,
-      borderRightWidth: "1px",
-      borderRightStyle: "solid",
-      minHeight: "100vh",
-      paddingRight:theme.spacing(3)
-    },
-    paddingTop:theme.spacing(5),
-  },
-  right: {
-    paddingTop:theme.spacing(5),
-    paddingLeft:theme.spacing(3)
-  },
-  toolbar: theme.mixins.toolbar,
-  menu: {
-    backgroundColor: theme.palette.primary.light,
-    boxShadow: "0 0 0 0",
-    borderColor: theme.palette.divider
-  },
-  menuHeader: {
-    color: theme.palette.common.white,
-    borderBottom:"1px solid",
-    borderBottomColor: theme.palette.divider,
-  },
-  menuContents: {
-    color: theme.palette.common.white,
-    paddingLeft: 0,
-    paddingRight:0,
-    paddingTop:0
-  },
-  icon: {
-    color: theme.palette.common.white,
-  },
-  itemTxt: {
-    fontWeight:"bold"
-  }
 })
 
 class App extends React.Component<Props,State> {

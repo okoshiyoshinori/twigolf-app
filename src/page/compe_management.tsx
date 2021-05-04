@@ -3,13 +3,13 @@ import {Dispatch} from 'redux'
 import {connect} from 'react-redux'
 import {RouteComponentProps,withRouter} from 'react-router-dom'
 import {withStyles,WithStyles,createStyles} from '@material-ui/styles'
-import {List,ListItem,ListItemAvatar,ListItemText,ListItemSecondaryAction,Chip,Dialog,DialogTitle,DialogContent,Table,TableBody,TableCell,TableContainer,TableHead,TableRow,FormControl,InputLabel,Select,MenuItem,Avatar,IconButton,Box,Button,TextField,Theme,Grid,Typography,Paper,colors} from '@material-ui/core'
+import {FormControlLabel,List,ListItem,ListItemAvatar,ListItemText,ListItemSecondaryAction,Chip,Dialog,DialogTitle,DialogContent,Table,TableBody,TableCell,TableContainer,Checkbox,TableHead,TableRow,FormControl,InputLabel,Select,MenuItem,Avatar,IconButton,Box,Button,TextField,Theme,Grid,Typography,Paper,colors} from '@material-ui/core'
 import {Helmet} from 'react-helmet'
 import {RootState} from '../store'
 import {ResetResult} from '../store/system/actions'
-import {Participant,Combination,User} from '../store/app/types'
-import {GetParticipantsWithName,GetCombination,GetCompetition} from '../store/app/api'
-import {getStatus,SearchLog,dateFormatwithTime,getInOut,getName,dateFormat,getAvatar} from '../util/util'
+import {Participant,Combination,User,BundleCombination} from '../store/app/types'
+import {GetExcel,GetParticipantsWithName,GetCombinationData,GetCompetition,PostCombinationData} from '../store/app/api'
+import {getSexNumber,getStatus,getAge,getSex,SearchLog,dateFormatwithTime,getInOut,getName,dateFormat,getAvatar} from '../util/util'
 import querystring from 'query-string'
 import Progress from '../components/progress'
 import Message from '../components/message'
@@ -19,6 +19,11 @@ import DeleteIcon  from '@material-ui/icons/Delete'
 import CloseIcon  from '@material-ui/icons/Close'
 import AddCircleOutlineIcon from '@material-ui/icons/AddCircleOutline'
 import Alert from '@material-ui/lab/Alert'
+import _ from 'lodash'
+
+type ColorStyle = {
+    color:string
+}
 
 type ParticipantSelect = {
   status: number
@@ -34,9 +39,10 @@ type SelectColumn = {
 interface Props extends ReduxType,RouteComponentProps,WithStyles<typeof styles>{}
 type State = {
   error: {
-    flag:boolean,
+    flag:boolean
     message:string
   }
+  combi_open:boolean
   open: boolean
   editable:boolean[]
   selectUsers: ParticipantSelect[]
@@ -62,6 +68,12 @@ const styles = (theme:Theme) => createStyles({
     '& > *': {
         fontSize: 12,
       }
+  },
+  check: {
+        color: theme.palette.grey[400],
+        '&$checked': {
+          color: theme.palette.primary.main
+        }
   },
   formLabel: {
     color: theme.palette.grey[900],
@@ -94,6 +106,7 @@ class CompeManagement extends React.Component<Props,State> {
         flag:false,
         message:""
       },
+      combi_open:false,
       selectColumn: {} as SelectColumn,
       open:false,
       editable: [] as boolean[],
@@ -109,28 +122,47 @@ class CompeManagement extends React.Component<Props,State> {
    this.props.getCompe(cid)
   }
   componentDidUpdate(Prov:Props) {
-    if ((Prov.combinations != this.props.combinations) || (Prov.participants != this.props.participants)) {
+    if ((Prov.combinations != this.props.combinations) || (Prov.participants != this.props.participants)
+      || (Prov.competition != this.props.competition)) {
       //初期化editable
       let temp:boolean[] = [] as boolean[]
-      this.props.combinations.forEach((_,index)=> {
-        temp.push(false)
-      })
-      //初期化participant 
       let parti:ParticipantSelect[] = [] as ParticipantSelect[]
-      this.props.participants.map((val) => {
-        parti.push({
-          status: val.status,
-          user:val.user,
-          select:false
+      if (this.props.combinations.payload != undefined) {
+        this.props.combinations.payload.forEach((_,index)=> {
+        temp.push(false)
         })
-      })
-      this.setState(
-      {
-        editable: temp,
-        combinations:this.props.combinations.slice(),
-        selectUsers:parti
+        //初期化participant 
+        this.props.participants.map((val) => {
+          parti.push({
+            status: val.status,
+            user:val.user,
+            select:this.props.combinations.payload.some(
+            (e) => e.member1 === val.user_id || e.member2 === val.user_id || e.member3 === val.user_id || e.member4 === val.user_id)
+            })
+        })
+        this.setState(
+        {
+          editable: temp,
+          combi_open: this.props.combinations.combination_open,
+          combinations:_.cloneDeep(this.props.combinations.payload),
+          selectUsers:parti
+        })
+      } else {
+        this.props.participants.map((val) => {
+          parti.push({
+            status: val.status,
+            user:val.user,
+            select:false,
+            })
+        })
+        this.setState(
+        {
+          editable: temp,
+          combi_open: this.props.combinations.combination_open,
+          combinations:[],
+          selectUsers:parti
+        })
       }
-      )
     }
   }
   componentWillUnmount() {
@@ -276,29 +308,22 @@ class CompeManagement extends React.Component<Props,State> {
         users.push(val.member4)
       }
     })
-    if (users.length <= 0) {
-      this.setState({
-        error: {
-            flag:true,
-            message: "参加者が一人も選択されていません"
-          }
-      })
-      return false
-    }
     //参加者チェック
+    let not_sanka:boolean = false
     users.map((val) => {
-      let result = participants.find((v) => v.user_id === val && v.status === 1)
-      if (result == undefined) {
+      let result = participants.find((v) => v.user_id == val && v.status == 1)
+      if (result === undefined) {
         this.setState({
           error: {
             flag:true,
-            message: "データがないか、参加以外の者が含まれています" 
+            message: "参加データがないか、ステータス「参加」以外の者が含まれています" 
           }
         })
-        return false
+        not_sanka = true
       }
     })
 
+    if (not_sanka) return false
     this.setState({
       error: {
         flag:false,
@@ -307,8 +332,31 @@ class CompeManagement extends React.Component<Props,State> {
     })
     return true
   }
+  getStyle(uid:number | null):ColorStyle {
+   const num =  getSexNumber(this.props.participants,uid)
+   const style:ColorStyle = {
+     color:"#000"
+   }
+   if (num == 0) {
+    style.color = colors.grey[800]
+   }
+   if (num == 1) {
+     style.color = colors.blue[800]
+   }
+   if (num == 2) {
+     style.color = colors.red[800]
+   }
+   return style
+  }
   send() {
-    this.check()
+    if (this.check()) {
+      let cid = this.props.competition.id == undefined ? 0:this.props.competition.id
+      let data:BundleCombination = {
+        open: this.state.combi_open,
+        transaction: this.state.combinations
+      }
+      this.props.postCombinations(data,cid)
+    }
   }
   addkumi() {
     const {combinations,editable} = this.state
@@ -339,15 +387,16 @@ class CompeManagement extends React.Component<Props,State> {
       <Grid container direction="row" justify="flex-start" spacing={1}>
             <div className="CompeManagement">
               <Helmet>
-                <title>コンぺ管理</title>
+                <title>ペアリング管理</title>
               </Helmet>
             </div>
           <Grid item xs={12} sm={12}>
             <Typography variant="h1" style={{marginBottom:"10px"}}>
-              コンペ管理
+              ペアリング管理
             </Typography>
             <Typography variant="caption">
-              コンペ組み合わせ表を作成することができます。作成したデータはExcelでダウンロードすることができます。 
+              ペアリングを作成することができます。作成したデータはエクセルファイルでダウンロードすることができます。コンペの際に
+              ご利用ください。 
             </Typography>
           </Grid>
           {  error.flag &&
@@ -373,13 +422,13 @@ class CompeManagement extends React.Component<Props,State> {
                     <TableCell align="right">メンバー4</TableCell>
                   </TableRow>
                 </TableHead>
-         {!system.loading.combinations && !system.loading.participants && combinations.length > 0 &&
+         {!system.loading.combinations && !system.loading.participants && !system.loading.competition && combinations.length > 0 && 
          <TableBody>
            { combinations.map((val,index) => ( 
               <TableRow className={classes.body}>
                 <TableCell component="th" scope="row">
                   <IconButton edge="start" data-id={index} size="small" onClick={(e) => this.handleDel(e)}>
-                  <DeleteIcon />
+                    <DeleteIcon />
                   </IconButton>
                   <IconButton edge="end" style={{marginLeft:10}} data-id={index} size="small" onClick={(e) => this.handleEdit(e)}>
                   { !editable[index] &&
@@ -394,10 +443,10 @@ class CompeManagement extends React.Component<Props,State> {
                 <>
                 <TableCell align="right">{dateFormatwithTime(val.start_time)}</TableCell>
                 <TableCell align="right">{getInOut(val.start_in_out)}</TableCell>
-                <TableCell align="right">{getName(participants,val.member1)}</TableCell>
-                <TableCell align="right">{getName(participants,val.member2)}</TableCell>
-                <TableCell align="right">{getName(participants,val.member3)}</TableCell>
-                <TableCell align="right">{getName(participants,val.member4)}</TableCell>
+                <TableCell align="right" style={this.getStyle(val.member1)}>{getName(participants,val.member1)}</TableCell>
+                <TableCell align="right" style={this.getStyle(val.member2)}>{getName(participants,val.member2)}</TableCell>
+                <TableCell align="right" style={this.getStyle(val.member3)}>{getName(participants,val.member3)}</TableCell>
+                <TableCell align="right" style={this.getStyle(val.member4)}>{getName(participants,val.member4)}</TableCell>
                 </>
                 }
                 { editable[index] &&
@@ -429,8 +478,10 @@ class CompeManagement extends React.Component<Props,State> {
                 <TableCell align="right">
                  { val.member1 !== null &&
                  <Chip 
-                    avatar={<Avatar alt="user" src={process.env.PUBLIC_URL + "/" + getAvatar(participants,val.member1)} />}
+                    avatar={<Avatar src={process.env.PUBLIC_URL + "/" + getAvatar(participants,val.member1)} />}
                     label={getName(participants,val.member1)}
+                    variant="outlined"
+                    style={this.getStyle(val.member1)}
                     onDelete={(e) => this.handleSelectDel(index,"member1")}/>
                  }
                  { val.member1 == null &&
@@ -442,7 +493,9 @@ class CompeManagement extends React.Component<Props,State> {
                 <TableCell align="right">
                 { val.member2 !== null &&
                  <Chip 
-                    avatar={<Avatar alt="user" src={process.env.PUBLIC_URL + "/" + getAvatar(participants,val.member2)} />}
+                    avatar={<Avatar src={process.env.PUBLIC_URL + "/" + getAvatar(participants,val.member2)} />}
+                    variant="outlined"
+                    style={this.getStyle(val.member2)}
                     label={getName(participants,val.member2)}
                     onDelete={(e) => this.handleSelectDel(index,"member2")}/>
                  }
@@ -455,7 +508,9 @@ class CompeManagement extends React.Component<Props,State> {
                 <TableCell align="right">
                 { val.member3 !== null &&
                  <Chip 
-                    avatar={<Avatar alt="user" src={process.env.PUBLIC_URL + "/" + getAvatar(participants,val.member3)} />}
+                    avatar={<Avatar src={process.env.PUBLIC_URL + "/" + getAvatar(participants,val.member3)} />}
+                    variant="outlined"
+                    style={this.getStyle(val.member3)}
                     label={getName(participants,val.member3)}
                     onDelete={(e) => this.handleSelectDel(index,"member3")}/>
                  }
@@ -468,8 +523,10 @@ class CompeManagement extends React.Component<Props,State> {
                 <TableCell align="right">
                 { val.member4 !== null &&
                  <Chip 
-                    avatar={<Avatar alt="user" src={process.env.PUBLIC_URL + "/" + getAvatar(participants,val.member4)} />}
+                    avatar={<Avatar src={process.env.PUBLIC_URL + "/" + getAvatar(participants,val.member4)} />}
                     label={getName(participants,val.member4)}
+                    variant="outlined"
+                    style={this.getStyle(val.member4)}
                     onDelete={(e) => this.handleSelectDel(index,"member4")}/>
                  }
                  { val.member4 == null &&
@@ -488,9 +545,33 @@ class CompeManagement extends React.Component<Props,State> {
               </Table>
            </TableContainer>
           <Box m={2}>
-                <Button color="primary" style={{color:"#fff",fontWeight:700}} onClick={() => this.send()}
+            <FormControlLabel  
+              control={
+                <Checkbox
+                className={classes.check}
+                name="twitter"
+                onChange={(e) => this.setState({
+                  combi_open:e.target.checked
+                })}
+                checked={this.state.combi_open}
+                color="primary"
+                />
+              }
+              label="公開する"/>
+          </Box>
+          <Box m={2}>
+                <Button color="primary" disabled={
+                  (JSON.stringify(combinations) == JSON.stringify(this.props.combinations.payload)) && 
+                  (this.state.combi_open == this.props.combinations.combination_open)
+                }
+                style={{color:"#fff",fontWeight:700}} onClick={() => this.send()}
                 variant="contained" disableElevation >
                   保存する 
+                </Button>
+                <Button style={{color:"#fff",fontWeight:700,marginLeft:20}} color="secondary" 
+                disabled={this.props.combinations.payload == undefined || system.loading.excel } variant="contained" disableElevation 
+                onClick={()=> this.props.getExcel(this.props.competition.id)}>
+                ダウンロード
                 </Button>
           </Box>
           </Grid>
@@ -521,10 +602,23 @@ class CompeManagement extends React.Component<Props,State> {
                       </Typography>
                       </React.Fragment>
                      }
-                    />
-                    <ListItemSecondaryAction>
-                    {getStatus(val.status)}
-                    </ListItemSecondaryAction>
+                     />
+                    <ListItemText primary={
+                       <React.Fragment>
+                        <Typography variant="h3" style={{marginRight:10}}>
+                          {getSex(val.user.sex)}
+                        </Typography>
+                       </React.Fragment>
+                     }
+                     />
+                     <ListItemText primary={
+                       <React.Fragment>
+                        <Typography variant="h3">
+                          {getAge(val.user.birthday)}
+                        </Typography>
+                       </React.Fragment>
+                     }
+                     />
                   </ListItem>
                   ) 
                 )}
@@ -552,10 +646,16 @@ const mapDispatchProps = (dispatch:Dispatch) => {
       GetCompetition(cid)(dispatch)
     },
     getParti(cid:number){
-       GetParticipantsWithName(cid)(dispatch)
+      GetParticipantsWithName(cid)(dispatch)
+    },
+    postCombinations(data:BundleCombination,cid:number){
+      PostCombinationData(data,cid)(dispatch)
     },
     getCombinations(cid:number) {
-      GetCombination(cid)(dispatch)
+      GetCombinationData(cid)(dispatch)
+    },
+    getExcel(cid:number) {
+      GetExcel(cid)(dispatch)
     },
     resetLog(){
       dispatch(ResetResult())

@@ -8,7 +8,7 @@ const initState:types.AppState = {
   participants:[] as types.Participant[],
   searchresult:{} as types.FetchResult,
   user:{} as types.User,
-  combinations:[] as types.Combination[],
+  combinations:{} as types.GetCombination,
 }
 
 const Reducers = (state:types.AppState= initState,action:types.AppAction):types.AppState => {

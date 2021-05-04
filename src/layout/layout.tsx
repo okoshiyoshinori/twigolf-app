@@ -16,6 +16,7 @@ import Config from '../page/config'
 import Detail from '../page/detail'
 import PaManagement from '../page/pa_management'
 import CompeManagement from '../page/compe_management'
+import Combinations from '../page/combinations'
 import PrivateRoute from '../page/privateRoute'
 import BottomNavi from '../components/bottomNavi'
 import TopBar from '../components/TopBar'
@@ -47,11 +48,12 @@ const styles = (theme:Theme) => createStyles({
 class Layout extends React.Component<Props,State> {
   constructor(props:Props) {
     super(props)
+    this.props.getSession()
   }
   componentDidMount() {
-   if (this.props.session.auth.id == undefined) {
-    this.props.getSession()
-   }
+  // if (this.props.session.auth.id == undefined) {
+    //this.props.getSession()
+ //  }
   }
   logouthandler(){
     this.props.logOut()
@@ -94,6 +96,7 @@ class Layout extends React.Component<Props,State> {
               <Route exact path="/search" component={Search} />
               <Route exact path="/guid" component={Guid} />
               <Route exact path="/dm" component={Dm} />
+              <Route exact path="/combinations/:cid" component={Combinations} />
               <PrivateRoute  path="/config" component={Config} auth="/events" />
               <PrivateRoute  path="/creation" component={Editing} auth="/events" />
               <PrivateRoute  path="/pa_management" component={PaManagement} auth="/events" />
@@ -106,9 +109,9 @@ class Layout extends React.Component<Props,State> {
           </Hidden>
         </Grid>
      </Container>
-     <Snackbar open={system.snack.status !== null ? true:false} autoHideDuration={3000}
+     <Snackbar  open={system.snack.status !== null ? true:false} autoHideDuration={3000}
      onClose={() => this.props.resetSnack()} anchorOrigin={{horizontal: 'center',vertical:'top'}}>
-     <Alert severity={system.snack.status !== null ? system.snack.status : "info"}>
+     <Alert variant="filled" severity={system.snack.status !== null ? system.snack.status : "info"}>
       {system.snack.message}
       </Alert>
      </Snackbar>

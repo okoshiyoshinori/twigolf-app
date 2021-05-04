@@ -92,10 +92,8 @@ class TopBar extends React.Component<Props,State> {
            }
            { session.login &&
 
-           <IconButton size="small">
-           <Tooltip title="ログアウト" aria-label="logout">
-           <Avatar onClick={()=> this.handleAvatarClick()} alt="Travis Howard" src={process.env.PUBLIC_URL + "/" + session.auth.avatar} />
-           </Tooltip>
+           <IconButton onClick={()=> this.handleAvatarClick()}  size="small">
+           <Avatar  src={process.env.PUBLIC_URL + "/" + session.auth.avatar} />
            </IconButton>
            }
         </Toolbar>

@@ -4,6 +4,7 @@ import {withRouter,RouteComponentProps} from 'react-router-dom'
 import {createStyles,Theme,withStyles,WithStyles} from '@material-ui/core/styles'
 import {dateFormatNotime,SearchLog} from '../util/util'
 import EventList from '../components/eventlist'
+import EventCard from '../components/EventCard'
 import {SearchCompetition} from '../store/app/api'
 import Progress from '../components/progress'
 import Message from '../components/message'
@@ -112,7 +113,7 @@ class Search extends React.Component<Props,State> {
     const searchResult = SearchLog(system.result,"search")
     const allPage:number = Math.ceil(competitions.allNumber/Number(process.env.REACT_APP_PERNUM))
     return (
-    <Grid container spacing={3}>
+    <Grid container spacing={1}>
       <div className="Search">
         <Helmet>
          <title>検索</title>
@@ -196,11 +197,11 @@ class Search extends React.Component<Props,State> {
         {system.loading.search && <Progress/>}
         {!system.loading.search && searchResult.status == 200 && 
         <>
+     { competitions.payload.map((val) => ( 
       <Grid item xs={12} sm={12} >
-              <Paper elevation={0} variant="outlined" >
-          <EventList data={competitions.payload} />
-        </Paper>
+        <EventCard data={val} />
       </Grid>
+     )) }
       <Grid item xs={12} sm={12} md={12}>
         <Pagination shape="rounded" page={this.state.p} onChange={(e,p) => this.handelePage(p)} count={allPage} boundaryCount={5}/>
       </Grid>

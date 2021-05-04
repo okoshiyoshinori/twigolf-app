@@ -18,7 +18,9 @@ import { useParams } from 'react-router-dom'
 import TwitterIcon from '@material-ui/icons/Twitter'
 import {PostParticipant,PostComment} from '../store/app/types'
 import {Helmet} from 'react-helmet'
-
+import EventIcon from '@material-ui/icons/Event'
+import AlarmOnIcon from '@material-ui/icons/AlarmOn'
+import PlaceIcon from '@material-ui/icons/Place'
 
 interface MatchParams {
   id:string
@@ -154,20 +156,26 @@ class CompeDetail extends React.Component<Props,State> {
   }
   render() {
     const {classes,session,competition,system,participants,comments} = this.props
-    const undecided:boolean = competition.event_day === null ? true:false
+    const undecided:boolean = competition.event_day == null ? true:false
     const commentResult = SearchLog(system.result,"comments")
     const participantsResult = SearchLog(system.result,"participants")
     const over = competition.capacity !== null && ExtractionParticipants(1,participants).length >= competition.capacity ? true:false
+    if (!system.loading.competition && competition.id == undefined) {
+      return (
+        <Message mes="該当のデータはありません" />
+      )
+    }
     return (
       <Grid container spacing={1}>
         { system.loading.competition && <Progress/> }
-        { !system.loading.competition && competition.id !== undefined &&
+        { !system.loading.competition && competition.id != undefined &&
+        <>
           <Grid item xs={12} sm={12}>
-          <div className="Detail">
-            <Helmet>
-              <title>{competition.title}</title>
-            </Helmet>
-         </div>
+            <div className="Detail">
+              <Helmet>
+                <title>{competition.title}</title>
+              </Helmet>
+            </div>
             <Box display="flex" justifyContent="center">
              <List style={{paddingTop:0}}>
                   <ListItem style={{padding:0}} button onClick={()=>this.props.history.push("/users/" + competition.user.sns_id)}>
@@ -181,35 +189,55 @@ class CompeDetail extends React.Component<Props,State> {
              </List>
             </Box>
             <Box display="flex" justifyContent="center" className={classes.box}>
-              <Typography variant="h1" component="h1" dangerouslySetInnerHTML={{__html:nl2br(competition.title)}} style={{lineHeight:1.4}} > 
+              <Typography variant="h1" component="h1" dangerouslySetInnerHTML={{__html:nl2br(competition.title)}} style={{lineHeight:"1.4em"}} > 
               </Typography>
             </Box>
-               {competition.keyword !== null && 
-             <Box display="flex" justifyContent="center" className={classes.box}>
+               { competition.keyword !== null && 
+                <Box display="flex" justifyContent="center" className={classes.box}>
                   <KeyWords keyWords={competition.keyword.split(",")}/>
-            </Box>
+                </Box>
                }
           </Grid>
-        }
           <Grid item xs={12} sm={12}>
             <Paper elevation={0} variant="outlined" className={classes.paper}>
             { !system.loading.competition && competition.id !== undefined &&
             <Grid container spacing={1}>
               <Grid item xs={12} sm={12}>
-                <Typography variant="h3" style={{lineHeight:1.4}}>
-                 {competition.place_text == null ? "開催場所：未定" : competition.place_text} 
+                <Typography variant="h4" style={{lineHeight:1.4}}>
+                <div style={{display: 'flex',alignItems: 'center',flexWrap: 'nowrap',}}>
+                 <PlaceIcon style={{fontSize:"1.0rem",color:colors.grey[600]}}/>
+                 <span style={{marginLeft:5}}>
+                  {competition.place_text == null ? "未定" : competition.place_text}
+                 </span>
+                 </div>
                 </Typography>
               </Grid>
              <Grid item xs={12} sm={12}>
-                <Typography variant="h3">
-                   <span> 開催日時 : {competition.event_day == null ? "未定" : dataFormatwithday(competition.event_day)} </span>
+                <Typography variant="h4">
+                <div style={{display: 'flex',alignItems: 'center',flexWrap: 'nowrap',}}>
+                  <EventIcon style={{fontSize:"1.0rem",color:colors.grey[600]}}/> <span style={{marginLeft:5}}>{competition.event_day == null ? 
+                  "未定" : dataFormatwithday(competition.event_day)}</span>
+                </div>
                 </Typography>
               </Grid>
              {competition.event_deadline !== null &&
               <Grid item xs={12} sm={12}>
-                <Typography variant="h3">
-                 受付期限 : {dataFormatwithday(competition.event_deadline)} 
+                <Typography variant="h4">
+                <div style={{display: 'flex',alignItems: 'center',flexWrap: 'nowrap',}}>
+                 <AlarmOnIcon style={{fontSize:"1.0rem",color:colors.grey[600]}}/>
+                 <span  style={{marginLeft:5}}> 
+                   {dataFormatwithday(competition.event_deadline)}
+                 </span>
+                </div>
                 </Typography>
+              </Grid>
+             }
+             { competition.combination_open && 
+              <Grid item xs={12} sm={12}>
+                <Button variant="text" color="primary" style={{fontWeight:700}}
+                  onClick={() => this.props.history.push("/combinations/" + competition.id)}>
+                  ペアリングを確認する
+                </Button>
               </Grid>
              }
               <Grid item xs={12} sm={12}>
@@ -221,10 +249,10 @@ class CompeDetail extends React.Component<Props,State> {
             </Paper>
           </Grid>
           <Grid item xs={12} sm={12}>
-            <Paper elevation={0} variant="outlined"  style={{border:"3px solid #6ec6ff"}} className={classes.paper}>
+            <Paper elevation={0} variant="outlined"  className={classes.paper}>
             { !session.login &&
             <>
-              <Typography component="p" align="center" style={{fontWeight:700}}>
+              <Typography variant="h3" align="center" style={{fontWeight:700}}>
                 このイベントに参加する場合は、まずログインをしてください
               </Typography>
               <Typography component="p" align="center" >
@@ -237,7 +265,7 @@ class CompeDetail extends React.Component<Props,State> {
             {
               session.login && !this.state.close &&
               <>
-               <Typography component="p" align="center" style={{fontWeight:700}}>
+               <Typography variant="h3"  align="center" style={{fontWeight:700}}>
                {over &&
                  <span style={{color:colors.red[500]}}>このイベントは定員に達しました</span>
                }
@@ -246,15 +274,15 @@ class CompeDetail extends React.Component<Props,State> {
                }
               </Typography>
               <Typography component="p" className={classes.sanka} align="center" style={{fontWeight:700}}>
-                <Button variant="contained" disableElevation disabled={!!system.loading.participants || over} 
+                <Button variant="contained" disableElevation disabled={system.loading.participants || over} 
                 onClick={() => this.handleParticipant(competition.id,1)} color="primary"  style={{color:"white",fontWeight:700}}>
                   参加する
                 </Button>
-                <Button variant="contained" disableElevation disabled={!!system.loading.participants}
+                <Button variant="contained" disableElevation disabled={system.loading.participants}
                 onClick={() => this.handleParticipant(competition.id,2)} color="secondary" style={{color:"white",fontWeight:700}}>
                   興味あり
                 </Button>
-                <Button variant="contained" disableElevation disabled={!!system.loading.participants}
+                <Button variant="contained" disableElevation disabled={system.loading.participants}
                 onClick={() => this.handleParticipant(competition.id,3)}  color="default" style={{fontWeight:700}}>
                   不参加
                 </Button>
@@ -271,9 +299,9 @@ class CompeDetail extends React.Component<Props,State> {
             </Paper>
           </Grid>
           <Grid item xs={12} sm={12}> 
-            {participantsResult.status !== 200 && <Paper elevation={0} variant="outlined" className={classes.paper}><Message mes={participantsResult.cause}/></Paper>}
+            {participantsResult.status != 200 && <Message mes={participantsResult.cause}/>}
             {system.loading.participants && <Progress/>}
-            {!system.loading.participants && participantsResult.status === 200 &&
+            {!system.loading.participants && participantsResult.status == 200 &&
             <Grid container spacing={1}>
               <Grid item xs={12} sm={4}>
                 <Paper elevation={0} variant="outlined" className={classes.paper}>
@@ -283,7 +311,7 @@ class CompeDetail extends React.Component<Props,State> {
                   <Divider/>
                   <List  style={{padding:"5px"}}>
                   { ExtractionParticipants(1,participants).map((data) => (
-                  <ListItem style={{padding:0}} key={data.user_id}>
+                  <ListItem style={{padding:0}} key={data.user_id} button onClick={()=>this.props.history.push("/users/" + data.user.sns_id)}>
                    <ListItemAvatar style={{padding:0,minWidth:40}}> 
                     <Avatar  src={process.env.PUBLIC_URL + "/" + data.user.avatar} aria-label="event" className={classes.avatar}/>
                    </ListItemAvatar> 
@@ -303,7 +331,7 @@ class CompeDetail extends React.Component<Props,State> {
                   <Divider/>
                   <List  style={{padding:"5px"}}>
                   { ExtractionParticipants(2,participants).map((data) => (
-                  <ListItem style={{padding:0}} key={data.user_id}>
+                  <ListItem style={{padding:0}} key={data.user_id} button onClick={()=>this.props.history.push("/users/" + data.user.sns_id)}>
                    <ListItemAvatar style={{padding:0,minWidth:40}}> 
                     <Avatar  src={process.env.PUBLIC_URL + "/" + data.user.avatar} aria-label="event" className={classes.avatar}/>
                    </ListItemAvatar> 
@@ -323,7 +351,7 @@ class CompeDetail extends React.Component<Props,State> {
                   <Divider/>
                   <List  style={{padding:"5px"}}>
                   { ExtractionParticipants(3,participants).map((data) => (
-                  <ListItem style={{padding:0}} key={data.user_id}>
+                  <ListItem style={{padding:0}} key={data.user_id} button onClick={()=>this.props.history.push("/users/" + data.user.sns_id)}>
                    <ListItemAvatar style={{padding:0,minWidth:40}}> 
                     <Avatar  src={process.env.PUBLIC_URL + "/" + data.user.avatar} aria-label="event" className={classes.avatar}/>
                    </ListItemAvatar> 
@@ -340,8 +368,13 @@ class CompeDetail extends React.Component<Props,State> {
           </Grid>
           <Grid item xs={12} sm={12}>
             <Paper variant="outlined" className={classes.paper}>
-            <Typography  variant="h2" className={classes.wrapIcon}>
-             <CommentIcon/>コメント
+            <Typography  variant="h3">
+              <div style={{display: 'flex',alignItems: 'center',flexWrap: 'nowrap',}}>
+                 <CommentIcon style={{fontSize:"1.0rem",color:colors.grey[600]}}/>
+                 <span  style={{marginLeft:5}}> 
+                  コメント
+                 </span>
+              </div>
             </Typography>
             {system.loading.comments && <Progress/>}
             {!system.loading.comments && commentResult.status == 200 &&
@@ -360,9 +393,9 @@ class CompeDetail extends React.Component<Props,State> {
             }
             { session.login &&
             <>
-            <TextField  fullWidth multiline required id="comment" style={{marginTop:10}} placeholder="コメント" value={this.state.comment_str}
+            <TextField  fullWidth multiline required id="comment" style={{marginTop:10}}  value={this.state.comment_str}
             onChange={(e) => this.setState({comment_str:e.target.value}) }
-            variant="outlined" error={this.state.error} helperText={this.state.helper} InputLabelProps={{className:classes.label}}/>
+            variant="standard" error={this.state.error} helperText={this.state.helper} InputLabelProps={{className:classes.label}}/>
             <Button variant="contained" disableElevation disabled={!!system.loading.comments}  onClick={() => this.send()} color="primary"  style={{marginTop:20,color:"white",fontWeight:700}}>
               投稿する
             </Button>
@@ -370,6 +403,8 @@ class CompeDetail extends React.Component<Props,State> {
             }
             </Paper>
           </Grid>
+          </>
+        }
       </Grid>
     )
   }
