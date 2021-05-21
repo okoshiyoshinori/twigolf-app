@@ -1,7 +1,6 @@
 import React from 'react'
-import {CardContent,Grid,Typography,Card,CardHeader,Theme,List,ListItem,ListItemIcon,Avatar,ListItemAvatar,Divider,ListItemText,Collapse} from '@material-ui/core'
+import {Typography,Card,Theme,List,ListItem,ListItemIcon,ListItemText} from '@material-ui/core'
 import {createStyles,withStyles,WithStyles} from '@material-ui/styles'
-import {ExpandLess,ExpandMore} from '@material-ui/icons/'
 import {withRouter,RouteComponentProps,NavLink} from 'react-router-dom'
 import HomeIcon from '@material-ui/icons/Home'
 import PeopleAltIcon from '@material-ui/icons/PeopleAlt'
@@ -56,30 +55,30 @@ class Menu extends React.Component<Props,State> {
             <List component="nav" style={{padding:0}}>
             { 
               session.login &&
-              <ListItem button divider  component={NavLink} to={"/users/" + session.auth.sns_id} activeClassName="Mui-selected">
+              <ListItem button divider  component={NavLink} to={"/users/" + session.auth.screen_name} activeClassName="Mui-selected">
                 <ListItemIcon>
                   <HomeIcon/>
                 </ListItemIcon>
-                <ListItemText primary={<Typography variant="h3">マイページ</Typography>} />
+                <ListItemText primary={<Typography variant="h4" style={{fontWeight:700}}>マイページ</Typography>} />
               </ListItem>
             }
               <ListItem button divider component={NavLink} to="/events" activeClassName="Mui-selected" exact>
                 <ListItemIcon>
                   <PeopleAltIcon />
                 </ListItemIcon>
-                <ListItemText primary={<Typography variant="h3">みんなのイベント</Typography>} />
+                <ListItemText primary={<Typography variant="h4" style={{fontWeight:700}}>みんなのイベント</Typography>} />
               </ListItem>
               <ListItem button divider component={NavLink} to="/search" activeClassName="Mui-selected" exact>
                 <ListItemIcon>
                   <SearchIcon />
                 </ListItemIcon>
-                <ListItemText primary={<Typography variant="h3">検索</Typography>} />
+                <ListItemText primary={<Typography variant="h4" style={{fontWeight:700}}>検索</Typography>} />
               </ListItem>
               <ListItem button divider component={NavLink} to="/guid" activeClassName="Mui-selected" exact>
                 <ListItemIcon>
                   <ImportContactsIcon/>
                 </ListItemIcon>
-                <ListItemText primary={<Typography variant="h3">使い方ガイド</Typography>}/>
+                <ListItemText primary={<Typography variant="h4" style={{fontWeight:700}}>使い方ガイド</Typography>}/>
               </ListItem>
             </List>
           </Card>

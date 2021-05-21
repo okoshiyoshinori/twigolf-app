@@ -3,12 +3,11 @@ import {Dispatch} from 'redux'
 import {connect} from 'react-redux'
 import {RouteComponentProps,withRouter} from 'react-router-dom'
 import {withStyles,WithStyles,createStyles} from '@material-ui/styles'
-import {FormControl,InputLabel,Select,MenuItem,Avatar,IconButton,Box,Button,TextField,Theme,Grid,Typography,Paper} from '@material-ui/core'
+import {FormControl,Select,MenuItem,Avatar,Box,Button,Theme,Grid,Typography,Paper} from '@material-ui/core'
 import {Helmet} from 'react-helmet'
 import {RootState} from '../store'
-import DeleteRounded from '@material-ui/icons/DeleteRounded'
 import {ResetResult} from '../store/system/actions'
-import {Participant,BundleParticipant,PostParticipant} from '../store/app/types'
+import {BundleParticipant,PostParticipant} from '../store/app/types'
 import {GetParticipants,PostBundlePatricipant} from '../store/app/api'
 import {SearchLog} from '../util/util'
 import querystring from 'query-string'
@@ -62,9 +61,9 @@ class PaManagement extends React.Component<Props,State> {
     this.props.getParti(Number(cid))
   }
   componentDidUpdate(Prov:Props) {
-    if (Prov.participants != this.props.participants) {
+    if (Prov.participants !== this.props.participants) {
       const data = [] as transaction[]
-      this.props.participants.map((val) => {
+      this.props.participants.forEach((val) => {
         data.push(
           {
             uid:val.user_id,
@@ -82,14 +81,14 @@ class PaManagement extends React.Component<Props,State> {
     const {participants} = this.props
     const data = this.state.participants.slice()
     let disable = true 
-    data.map(val => {
-      if (val.uid == uid) {
+    data.forEach(val => {
+      if (val.uid === uid) {
         val.status = status
       }
     })
-    data.map((v1) => {
-      let result = participants.find((v2) => v1.uid == v2.user_id)
-      if (result == undefined) return
+    data.forEach((v1) => {
+      let result = participants.find((v2) => v1.uid === v2.user_id)
+      if (result === undefined) return
       if (result.status !== v1.status) {
         disable = false
       }
@@ -107,9 +106,9 @@ class PaManagement extends React.Component<Props,State> {
         return
       }
     }
-    participants.map((v1) => {
-      let result = this.props.participants.find((v2) => v2.user_id == v1.uid)
-      if (result != undefined && result.status !== v1.status) {
+    participants.forEach((v1) => {
+      let result = this.props.participants.find((v2) => v2.user_id === v1.uid)
+      if (result !== undefined && result.status !== v1.status) {
         let tmp:PostParticipant = {
             id: result.id,
             competition_id:result.competition_id,
@@ -124,11 +123,11 @@ class PaManagement extends React.Component<Props,State> {
   }
   getStatus(uid:number):number{
     let d = this.state.participants.find((val) => val.uid === uid)
-    return d == undefined ? 4: d.status
+    return d === undefined ? 4: d.status
   }
   queryParse():string {
     const parse = querystring.parse(this.props.location.search)
-    return parse.cid == undefined ? "0": parse.cid as string
+    return parse.cid === undefined ? "0": parse.cid as string
   }
   render() {
     const {classes,system,participants} = this.props
@@ -151,21 +150,21 @@ class PaManagement extends React.Component<Props,State> {
           <Grid item xs={12} sm={12}>
             <Paper variant="outlined" className={classes.paper}>
               { system.loading.participants && <Progress/>}
-              { !system.loading.participants && results.status == 200 &&
+              { !system.loading.participants && results.status === 200 &&
               <List>
                 { participants.map(val => ( 
                   <ListItem key={val.id} divider alignItems="center" >
                     <ListItemAvatar>
                       <Avatar 
-                        src={process.env.PUBLIC_URL + "/" + val.user.avatar} />
+                        src={ val.user.avatar} />
                     </ListItemAvatar>
                     <ListItemText primary={
                        <React.Fragment>
                       <Typography variant="caption">
-                        {val.user.screen_name}
+                        {val.user.name}
                       </Typography>
                       <Typography variant="caption" component="p" >
-                        {val.user.sns_id}
+                        {val.user.screen_name}
                       </Typography>
                       </React.Fragment>
                      }

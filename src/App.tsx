@@ -1,25 +1,11 @@
 import React from 'react';
 import CssBaseLine from '@material-ui/core/CssBaseLine'
-import Typography from '@material-ui/core/Typography'
-import Container from '@material-ui/core/Container'
-import {List,ListItem,ListItemText,ListItemIcon} from '@material-ui/core'
-import Grid from '@material-ui/core/Grid'
-import Box from '@material-ui/core/Box'
-import Card from '@material-ui/core/Card'
-import {CardHeader,CardContent,colors} from '@material-ui/core/'
-import Paper from '@material-ui/core/Paper'
+import {colors} from '@material-ui/core'
 import { createMuiTheme,responsiveFontSizes} from '@material-ui/core/styles'
 import { ThemeProvider } from '@material-ui/styles'
-import { Shadows } from '@material-ui/core/styles/shadows'
 import {createStyles,Theme,withStyles,WithStyles} from '@material-ui/core/styles'
-import Divider from '@material-ui/core/Divider'
-import AccountBoxIcon from '@material-ui/icons/AccountBox'
-import TopBar from './components/TopBar'
-import EmojiPeopleIcon from '@material-ui/icons/EmojiPeople'
-import SearchIcon from '@material-ui/icons/Search'
-import DataUsageIcon from '@material-ui/icons/DataUsage'
-import {NavLink,withRouter,RouteComponentProps} from 'react-router-dom'
-import {RootState} from './store'
+import {withRouter,RouteComponentProps} from 'react-router-dom'
+
 
 let theme = createMuiTheme({
   typography: {
@@ -38,25 +24,19 @@ let theme = createMuiTheme({
       textTransform: "none"
     },
     h1: {
-     // fontWeight:700,
       fontSize:"1.6rem",
-//      color:"#2a2b52"
     },
     h2: {
-    //  fontWeight:700,
-      fontSize:"1.3rem",
- //     color:"#2a2b52"
+      fontSize:"1.4rem",
     },
     h3: {
-    //  fontWeight:600,
-      fontSize:"1.0rem",
-  //    color:"#2a2b52"
+      fontSize:"1.2rem",
     },
     h4: {
-      fontSize:"0.8rem"
+      fontSize:"1.0rem"
     },
     h5: {
-      fontSize:"0.6rem"
+      fontSize:"0.8rem"
     }
   },
   palette: {
@@ -106,26 +86,26 @@ let theme = createMuiTheme({
       root: {
         "&$selected": { 
           backgroundColor: "white",
-          color: "#0069c0",
+          color: colors.blue[600],
           '& svg': {
-            color:"#0069c0"
+            color:colors.blue[600]
           }
         }
       }
     },
     MuiTabs: {
       root:{
-        fontWeight:800,
         color:colors.blueGrey[500]
        },
       indicator: {
         backgroundColor:colors.grey[800],
+        height:3,
       },
     },
     MuiTab: {
       root: {
-        fontSize:"1.3rem",
         '&$selected': {
+          fontWeight:500,
           color: colors.grey[800] 
         }
       }
@@ -144,6 +124,9 @@ let theme = createMuiTheme({
       }
     },
     MuiCardHeader: {
+      root: {
+        alignItems:"left"
+        },
       avatar:{
         marginRight:10,
       }
@@ -157,11 +140,7 @@ const styles = (them:Theme) => createStyles({
 })
 
 class App extends React.Component<Props,State> {
-  constructor(props:Props) {
-    super(props)
-  }
   render() {
-    const {classes} = this.props
     return (
       <React.Fragment>
         <ThemeProvider theme={theme}>
@@ -172,5 +151,6 @@ class App extends React.Component<Props,State> {
     )
   }
 }
+
 
 export default withRouter(withStyles(styles,{withTheme:true})(App))

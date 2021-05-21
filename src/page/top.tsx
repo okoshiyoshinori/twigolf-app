@@ -1,17 +1,28 @@
 import React from 'react'
 import {RouteComponentProps,withRouter} from 'react-router-dom'
-import {List,ListItem,Grid,Container,Theme} from '@material-ui/core'
-import EventCard from '../components/EventCard'
-import {Typography,Divider,Button,Box} from '@material-ui/core'
+import {Grid,Container,Theme} from '@material-ui/core'
+import TopBar from '../components/TopBar'
+import {Typography,Button,Box} from '@material-ui/core'
 import {createStyles,withStyles,WithStyles} from '@material-ui/styles'
 import TwitterIcon from '@material-ui/icons/Twitter'
+import {RootState} from '../store'
+import {Dispatch} from 'redux'
+import {connect} from 'react-redux'
+import {GetSession,LogOut} from '../store/session/api'
+import {TwitterLogin} from '../store/app/api'
+import {ResetSnack} from '../store/system/actions'
+import {Helmet} from 'react-helmet'
 
-interface Props extends RouteComponentProps,WithStyles<typeof styles>{}
+
+interface Props extends ReduxProps,RouteComponentProps,WithStyles<typeof styles>{}
 type State = {}
 
 const styles = (theme:Theme) => createStyles({
+  container: {
+    height: "100vh"
+  },
   root: {
-    paddingTop: "50px"
+    paddingTop: "100px"
   },
     button: {
     marginTop: theme.spacing(3),
@@ -23,28 +34,50 @@ const styles = (theme:Theme) => createStyles({
       borderRightColor: theme.palette.divider,
       borderRightWidth: "1px",
       borderRightStyle: "solid",
-      paddingRight:theme.spacing(3)
     },
+  },
+  margin30: {
+    [theme.breakpoints.down("sm")]: {
+      marginTop:30
+    }
   },
   sug: {
     '& > *': {
-      margin:theme.spacing(2)
+      marginRight:theme.spacing(2),
+      color:theme.palette.common.white,
+      fontWeight:"bold",
     },
-    textAlign: "center",
+    [theme.breakpoints.down("xs")]: {
+      textAlign:"center"
+    },
     marginTop: theme.spacing(2)
   },
   subtitle: {
     fontWeight:700,
     color:"#2a2b52",
+    [theme.breakpoints.up("xs")]: {
+      fontSize: "1.2rem",
+      textAlign:"center"
+    },
     [theme.breakpoints.up("sm")]: {
-      fontSize: "1.0rem"
+      fontSize: "1.5rem",
+      textAlign:"left"
     },
     [theme.breakpoints.up("md")]: {
-      fontSize: "1.7rem"
+      fontSize: "1.7rem",
+      textAlign:"left"
     },
     [theme.breakpoints.up("lg")]: {
-      fontSize: "1.8rem"
+      fontSize: "1.8rem",
+      textAlign:"left"
     }
+  },
+  con: {
+    color:"#2a2b52",
+    [theme.breakpoints.down("sm")]: {
+      textAlign:"center",
+    },
+      marginTop:20
   },
   toolbar: theme.mixins.toolbar,
 }) 
@@ -53,43 +86,75 @@ const styles = (theme:Theme) => createStyles({
 class Top extends React.Component<Props,State> {
   constructor(props:any) {
     super(props)
+    this.props.getSession()
   }
   linkTo() {
     this.props.history.push("/events")
   }
+  login() {
+    this.props.login()
+  }
+  logouthandler(){
+    this.props.logOut()
+  }
   render() {
-    const {classes} = this.props
+    const {classes,session} = this.props
     return (
-      <Container maxWidth={"md"}>
-      <div className={classes.toolbar}/>
-        <Grid container alignItems="center" justify="center" className={classes.root}>
-          <Grid sm={12}>
-          <Typography className={classes.subtitle} align="center" > 
-            イベント告知・出席管理をより簡単に
-          </Typography>
+      <Container maxWidth="lg" className={classes.container} style={{backgroundColor:"#fff"}}>
+        <TopBar session={session} handler={()=>this.logouthandler()} loginHandler={() => this.login()}/>
+        <Grid container direction="row" justify="center" alignItems="center" spacing={2}  className={classes.root}>
+          <Grid item sm={12} md={5}>
+            <div className="top">
+              <Helmet>
+                <title>ゴルフのイベント告知と管理をより簡単に - twigolf</title>
+              </Helmet>
+            </div>
+            <Box>
+            <Typography component="p" className={classes.subtitle}  >
+            イベント告知と管理をより簡単に
+            </Typography>
+            <Typography className={classes.con} > 
+            twigolfはゴルフに関するイベント開催に便利な告知・管理支援サービスです。
+            </Typography>
+            </Box>
+            <Box className={classes.sug}>
+            <Button size="large" disableElevation  variant="contained"  color="primary" 
+            onClick={() => this.props.login()} startIcon={<TwitterIcon/>}>ログイン</Button>
+            <Button size="large" disableElevation  variant="contained" color="secondary" onClick={()=>{this.linkTo()}} >後で</Button>
+            </Box>
           </Grid>
-          <Grid sm={12} style={{marginTop:"20px"}}>
-           <Typography  align="center" > 
-            ゴルフイベント告知管理サイト
-          </Typography>
+          <Grid item sm={12} md={5} className={classes.margin30}  >
+            <img alt="picture_top" src="top_image.png" width="100%" />
           </Grid>
-                  <div className={classes.sug}>
-          <Button size="large" className={classes.button} variant="contained"  color="primary" startIcon={<TwitterIcon/>}>ログイン</Button>
-          <Button size="large"  variant="contained" onClick={()=>{this.linkTo()}} >続きを見る</Button>
-        </div>
-          <Grid container style={{marginTop:"20px"}} spacing={2}>
-            {[1,2,3,4,5,6].map((i) => (
-            <Grid xs={12} sm={4} key={i} item >
-            { /*
-              <EventCard />
-             */}
-            </Grid>
-            ))}
-          </Grid>
-        </Grid>
-      </Container>
+       </Grid>
+     </Container>
     )
   }
 }
+const  mapStateToProps = (state:RootState) => {
+  return  {
+    session:state.session,
+    system:state.system
+  }
+}
 
-export default withRouter(withStyles(styles,{withTheme:true})(Top))
+const mapDispatchToProps = (dispatch:Dispatch) => {
+  return {
+    getSession() {
+      GetSession()(dispatch)
+    },
+    login() {
+      TwitterLogin()(dispatch)
+    },
+    logOut() {
+      LogOut()(dispatch)
+    },
+    resetSnack() {
+      dispatch(ResetSnack())
+    }
+  }
+}
+
+type ReduxProps = ReturnType<typeof mapStateToProps> & ReturnType<typeof mapDispatchToProps>
+
+export default connect(mapStateToProps,mapDispatchToProps)(withRouter(withStyles(styles,{withTheme:true})(Top)))

@@ -2,7 +2,7 @@ import React from 'react'
 import {Route} from 'react-router-dom'
 import {withRouter,RouteComponentProps,Switch} from 'react-router-dom'
 import Menu from '../components/menu'
-import {Container,Theme,Grid,Hidden,Snackbar,SnackbarContent} from '@material-ui/core'
+import {Box,Button,IconButton,Container,List,ListItem,ListItemText,Typography,Theme,Grid,Hidden,Snackbar,colors} from '@material-ui/core'
 import {createStyles,withStyles,WithStyles} from '@material-ui/styles'
 import Alert from '@material-ui/lab/Alert'
 import All from '../page/all'
@@ -10,10 +10,10 @@ import Search from '../page/search'
 import Guid from '../page/guid'
 import Plan from '../page/plan'
 import Editing from '../page/editing'
-import Events from '../page/event'
 import Dm from '../page/dm'
 import Config from '../page/config'
 import Detail from '../page/detail'
+import About from '../page/about'
 import PaManagement from '../page/pa_management'
 import CompeManagement from '../page/compe_management'
 import Combinations from '../page/combinations'
@@ -24,17 +24,17 @@ import {RootState} from '../store'
 import {Dispatch} from 'redux'
 import {connect} from 'react-redux'
 import {GetSession,LogOut} from '../store/session/api'
+import {TwitterLogin} from '../store/app/api'
 import {ResetSnack} from '../store/system/actions'
-import {snackStatus} from '../store/system/types'
+import TwitterIcon from '@material-ui/icons/Twitter'
+const {HashLink} = require('react-router-hash-link')
+const {TwitterDMButton} = require("react-twitter-embed")
 
 interface Props extends ReduxProps,RouteComponentProps,WithStyles<typeof styles>{}
 type State = {}
 
 const styles = (theme:Theme) => createStyles({
   container: {
-    [theme.breakpoints.down("sm")]: {
-      marginBottom:"100px",
-    }
   },
   root: {
     paddingTop: "20px",
@@ -42,7 +42,19 @@ const styles = (theme:Theme) => createStyles({
       padding: "50px 10px 10px 10px"
     }
   },
-  toolbar: theme.mixins.toolbar
+  footer: {
+    minHeight:"10.0rem",
+    marginTop:theme.spacing(13),
+    backgroundColor: "#3e3e3e",
+    [theme.breakpoints.down("sm")]: {
+      paddingBottom:theme.spacing(7),
+    }
+  },
+  toolbar: theme.mixins.toolbar,
+  menu: {
+      position:"sticky",
+      top: 80 
+    }
 })
 
 class Layout extends React.Component<Props,State> {
@@ -50,53 +62,37 @@ class Layout extends React.Component<Props,State> {
     super(props)
     this.props.getSession()
   }
-  componentDidMount() {
-  // if (this.props.session.auth.id == undefined) {
-    //this.props.getSession()
- //  }
-  }
   logouthandler(){
     this.props.logOut()
   }
-  getColor(d:snackStatus):string {
-    switch (d){
-      case null:
-        return ""
-      case "success":
-        return "green"
-      case "info":
-        return "blue"
-      case "error":
-        return "red"
-      case "warning":
-        return "orange"
-      defalt:
-        return "greeen"
-    }
+  loginhandler() {
+    this.props.login()
   }
   render() {
     const {classes,session,system} = this.props
-    const snackColor =  this.getColor(system.snack.status)
     return (
     <div>
-      <Container maxWidth={"lg"} className={classes.container}>
+      <Container maxWidth={"lg"}  className={classes.container}>
         <div className={classes.toolbar}/>
-        <TopBar session={session} handler={()=>this.logouthandler()}/>
+        <TopBar session={session} handler={()=>this.logouthandler()} loginHandler={() => this.loginhandler()}/>
         <Grid container className={classes.root} direction="row" justify="center" spacing={4} >
           <Hidden smDown >
-            <Grid  md={3} item>
-              <Menu session={session}/>
+            <Grid  md={3} item style={{minHeight:"100vh"}} >
+              <div className={classes.menu}>
+                <Menu session={session}/>
+              </div>
             </Grid>
           </Hidden>
-          <Grid xs={12} sm={12} md={7} item>
+          <Grid xs={12} sm={12} md={7} item style={{minHeight:"100vh"}}>
             <Switch>
-              <Route exact path="/users/:snsid" component={Plan} />
+              <Route exact path="/users/:screen_name" component={Plan} />
               <Route exact path="/events" component={All} />
               <Route exact path="/events/:id" component={Detail} />
               <Route exact path="/search" component={Search} />
               <Route exact path="/guid" component={Guid} />
               <Route exact path="/dm" component={Dm} />
               <Route exact path="/combinations/:cid" component={Combinations} />
+              <Route exact path="/about" component={About} />
               <PrivateRoute  path="/config" component={Config} auth="/events" />
               <PrivateRoute  path="/creation" component={Editing} auth="/events" />
               <PrivateRoute  path="/pa_management" component={PaManagement} auth="/events" />
@@ -109,7 +105,53 @@ class Layout extends React.Component<Props,State> {
           </Hidden>
         </Grid>
      </Container>
-     <Snackbar  open={system.snack.status !== null ? true:false} autoHideDuration={3000}
+     <Container style={{padding:0}}> 
+      <Grid container className={classes.footer} direction="row" justify="center">
+          <Grid xs={12} sm={12} md={5} item style={{padding:"25px 0px 10px 25px"}}>
+            <Box>
+               <img alt="logo" src={`${process.env.PUBLIC_URL}/logo_white.png`} width="90px" />
+            </Box>
+            <Box >
+              <Typography variant="h5" style={{color:colors.common.white}}>
+                イベント告知と管理をより簡単に
+              </Typography>
+            </Box>
+            <Box mb={1}>
+                <a href="https://twitter.com/AppTwigolf" target="blank" style={{color:colors.common.white}}>
+                  <TwitterIcon/>
+                </a>
+            </Box>
+          </Grid>
+          <Grid xs={12} sm={12} md={5} item style={{padding:10}}>
+            <Box>
+              <List>
+                <ListItem>
+                  <ListItemText primary={
+                    <HashLink to="/about#a" style={{color:colors.grey[400],textDecoration:"none"}}>About</HashLink>
+                  } style={{color:colors.grey[400]}} />
+                </ListItem>
+                <ListItem>
+                  <ListItemText primary={<HashLink to="/about#a1" style={{color:colors.grey[400],textDecoration:"none"}}>運営者について</HashLink>
+                  } style={{color:colors.grey[400]}} />
+                </ListItem>
+                <ListItem>
+                  <ListItemText primary={<HashLink to="/about#a2" style={{color:colors.grey[400],textDecoration:"none"}}>twitter連携について</HashLink>
+                  } style={{color:colors.grey[400]}} />
+                </ListItem>
+                <ListItem>
+                  <ListItemText primary={<HashLink to="/about#a3" style={{color:colors.grey[400],textDecoration:"none"}}>利用規約</HashLink>
+                  } style={{color:colors.grey[400]}} />
+                </ListItem>
+                <ListItem>
+                  <ListItemText primary={<HashLink to="/about#a5" style={{color:colors.grey[400],textDecoration:"none"}}>プライバシーポリシー</HashLink>
+                  } style={{color:colors.grey[400]}} />
+                </ListItem>
+              </List>
+            </Box>
+          </Grid>
+        </Grid>
+     </Container>
+     <Snackbar  open={system.snack.status !== null ? true:false} autoHideDuration={3000} 
      onClose={() => this.props.resetSnack()} anchorOrigin={{horizontal: 'center',vertical:'top'}}>
      <Alert variant="filled" severity={system.snack.status !== null ? system.snack.status : "info"}>
       {system.snack.message}
@@ -134,6 +176,9 @@ const mapDispatchToProps = (dispatch:Dispatch) => {
   return {
     getSession() {
       GetSession()(dispatch)
+    },
+    login() {
+      TwitterLogin()(dispatch)
     },
     logOut() {
       LogOut()(dispatch)

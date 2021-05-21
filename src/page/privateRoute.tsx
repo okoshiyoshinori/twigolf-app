@@ -1,5 +1,5 @@
 import React from 'react'
-import {Redirect,Route,RouteComponentProps,withRouter,RouteProps} from 'react-router-dom'
+import {Redirect,Route,RouteComponentProps,withRouter} from 'react-router-dom'
 import {connect} from 'react-redux'
 import {RootState} from '../store'
 import Progress from '../components/progress'
@@ -11,9 +11,6 @@ interface Props extends ReduxProps,RouteComponentProps {
 }
 
 class PrivateRoute extends React.Component<Props,{}> {
-  constructor(props:Props) {
-    super(props)
-  }
   render() {
     const {session,system} = this.props
     if (!system.loading.session) {

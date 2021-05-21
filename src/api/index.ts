@@ -1,4 +1,5 @@
 import axios from 'axios'
+import config from '../config/config'
 
 //API url
 export const API_USER = "/api/public/user"
@@ -20,9 +21,11 @@ export const API_GET_COMBINATIONS = "/api/public/combination"
 export const API_GET_PARTICIPANTS_WITH_NAME = "/api/private/participants_with_name"
 export const API_POST_COMBINATIONS = "/api/private/combination"
 export const API_GET_EXCEL = "/api/private/get_combination_excel"
+export const API_DM = "/api/private/send_dm"
+export const API_TWITTER_LOGIN = "api/public/twitterlogin"
 
 export default axios.create({
-  baseURL: "http://192.168.61.7:9001",
+  baseURL: config?.api_url,
   headers: {
     'Content-Type': 'application/json',
   },

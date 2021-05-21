@@ -1,13 +1,11 @@
 import React from 'react'
-import {withRouter,RouteComponentProps,NavLink} from 'react-router-dom'
+import {withRouter,RouteComponentProps} from 'react-router-dom'
 import {BottomNavigation,BottomNavigationAction,Theme} from '@material-ui/core'
 import {createStyles,WithStyles,withStyles} from '@material-ui/styles'
 import HomeIcon from '@material-ui/icons/Home'
 import PeopleAltIcon from '@material-ui/icons/PeopleAlt'
 import SearchIcon from '@material-ui/icons/Search'
 import ImportContactsIcon from '@material-ui/icons/ImportContacts'
-import Menu from '@material-ui/core/Menu'
-import MenuItem from '@material-ui/core/MenuItem'
 import {Session} from '../store/session/types'
 interface Props extends RouteComponentProps,WithStyles<typeof styles>{
   session:Session
@@ -51,7 +49,7 @@ class BottomNavi extends React.Component<Props,State> {
     <div>
       <BottomNavigation  showLabels={false} className={classes.root} value={selected} onChange={(e,val)=>this.hundleChange(e,val)}>
       { session.login &&
-        <BottomNavigationAction showLabel={false}  value={"/users/" + session.auth.sns_id} className={classes.select} key="mypage" icon={<HomeIcon />} />
+        <BottomNavigationAction showLabel={false}  value={"/users/" + session.auth.screen_name} className={classes.select} key="mypage" icon={<HomeIcon />} />
       }
         <BottomNavigationAction showLabel={false}  value={"/events"} className={classes.select} key="event" icon={<PeopleAltIcon />} />
         <BottomNavigationAction showLabel={false}  value={"/search"} className={classes.select} key="search" icon={<SearchIcon />} />

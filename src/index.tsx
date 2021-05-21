@@ -8,14 +8,17 @@ import Top from './page/top'
 import Layout from './layout/layout'
 import store from './store'
 import {Provider}  from 'react-redux'
+import ScrollToTop from './components/scrollToTop'
 ReactDOM.render(
   <React.StrictMode>
   <Provider store={store}>
    <Router>
+    <ScrollToTop>
     <App> 
       <Route exact path="/" component={Top}></Route>
-      <Route path={["/users/:snsid","/events","/events/:id","/search","/guid","/dm","/config","/creation","/pa_management","/compe_management","/combinations/:cid"]}  component={Layout}/>
+      <Route path={["/users/:snsid","/events","/events/:id","/search","/guid","/dm","/config","/creation","/pa_management","/compe_management","/combinations/:cid","/about"]}  component={Layout}/>
     </App>
+    </ScrollToTop>
    </Router>
    </Provider>
   </React.StrictMode>,

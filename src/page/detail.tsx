@@ -1,24 +1,23 @@
 import React from 'react'
 import {RouteComponentProps,withRouter} from 'react-router-dom'
 import {withStyles,WithStyles,createStyles} from '@material-ui/styles'
-import {Box,Divider,TextField,Button,Avatar,List,colors,ListItem,CircularProgress,ListItemAvatar,ListItemText,Theme,Grid,Typography,Paper} from '@material-ui/core'
+import {Box,Divider,TextField,Button,Avatar,List,colors,ListItem,ListItemAvatar,ListItemText,Theme,Grid,Typography,Paper} from '@material-ui/core'
 import marked from 'marked'
-import {Competition} from '../store/app/types'
 import CommentIcon from '@material-ui/icons/Comment'
 import KeyWords from '../components/keyWord'
 import Message from '../components/message'
 import {RootState} from '../store'
 import {connect} from 'react-redux' 
 import {Dispatch} from 'redux'
-import {PostComments,GetCompetition,GetParticipants,GetComments,PostPatricipant} from '../store/app/api'
+import {TwitterLogin,PostComments,GetCompetition,GetParticipants,GetComments,PostPatricipant} from '../store/app/api'
 import {ResetResult} from '../store/system/actions'
 import Progress from '../components/progress'
-import {nl2br,dataFormatwithday,dateFormat,dayEditor,ExtractionParticipants,SearchLog} from '../util/util'
-import { useParams } from 'react-router-dom'
+import {nl2br,ParticipantsStatus,dataFormatwithday,dayEditor,ExtractionParticipants,SearchLog} from '../util/util'
 import TwitterIcon from '@material-ui/icons/Twitter'
 import {PostParticipant,PostComment} from '../store/app/types'
 import {Helmet} from 'react-helmet'
 import EventIcon from '@material-ui/icons/Event'
+import AvatarGroup from '@material-ui/lab/AvatarGroup'
 import AlarmOnIcon from '@material-ui/icons/AlarmOn'
 import PlaceIcon from '@material-ui/icons/Place'
 
@@ -57,11 +56,11 @@ const styles = (theme:Theme) => createStyles({
     fontWeight:700
   },
   avatar: {
-    width: theme.spacing(4),
-    height: theme.spacing(4)
+    width: theme.spacing(5),
+    height: theme.spacing(5)
   },
   paper: {
-    minHeight: "100px",
+    //minHeight: "100px",
     padding: "15px",
     borderRadius: "10px"
   },
@@ -79,6 +78,24 @@ const styles = (theme:Theme) => createStyles({
   },
   box: {
     marginBottom:15
+  },
+  sticky: {
+      position:"sticky",
+      top:80,
+      width:"100%",
+      padding:5,
+      zIndex:2147483647,
+  },
+  avatar2: {
+    width:30,
+    height:30,
+    padding:1,
+    background:colors.grey[100],
+    borderRadius: "50%",
+    margin:'auto',
+    '& > img': {
+        borderRadius: "50%"
+      }
   }
 }) 
 
@@ -90,8 +107,8 @@ class CompeDetail extends React.Component<Props,State> {
       comment_str:"",
       error:false,
       helper:"",
-      close: this.props.competition.status == 0 || dayEditor().isAfter(dayEditor(this.props.competition.event_deadline))  ? true:false,
-      timer: this.props.competition.status == 0 ? null:setInterval(() => this.closeAccept(),1000)
+      close:false,
+      timer: null,
     }
   }
   componentDidMount() {
@@ -110,15 +127,15 @@ class CompeDetail extends React.Component<Props,State> {
   }
   componentWillUnmount() {
     this.props.resetLog()
-    if (this.state.timer !== null) {
+    if (this.state.timer != null) {
       clearInterval(this.state.timer)
     }
   }
   handleParticipant(cid:number,status:number) {
     const {participants} = this.props
     let id:number 
-    let result = participants.find(val => val.user_id == this.props.session.auth.id)
-    if (result == undefined) {
+    let result = participants.find(val => val.user_id === this.props.session.auth.id)
+    if (result === undefined) {
       id = 0
     } else {
       id = result.id
@@ -131,7 +148,7 @@ class CompeDetail extends React.Component<Props,State> {
     })
   }
   send() {
-    if (this.state.comment_str == "" ) {
+    if (this.state.comment_str === "" ) {
       this.setState({error:true,helper:"入力してください"})
       return
     }
@@ -144,7 +161,7 @@ class CompeDetail extends React.Component<Props,State> {
   }
   componentDidUpdate(privprops:Props) {
     if (privprops.system !== this.props.system) {
-      if (SearchLog(this.props.system.result,"comments").status == 200 ) {
+      if (SearchLog(this.props.system.result,"comments").status === 200 ) {
         this.setState({
           ...this.state,
           comment_str:"",
@@ -153,22 +170,28 @@ class CompeDetail extends React.Component<Props,State> {
         })
       }
     }
+    if (privprops.competition !== this.props.competition) {
+      this.setState({
+        close: this.props.competition.status === 0 || dayEditor().isAfter(dayEditor(this.props.competition.event_deadline)) || 
+              dayEditor().isAfter(dayEditor(this.props.competition.event_day))  ? true:false,
+        timer: this.props.competition.status === 0 ? null:setInterval(() => this.closeAccept(),1000)
+      })
+    }
   }
   render() {
     const {classes,session,competition,system,participants,comments} = this.props
-    const undecided:boolean = competition.event_day == null ? true:false
     const commentResult = SearchLog(system.result,"comments")
     const participantsResult = SearchLog(system.result,"participants")
     const over = competition.capacity !== null && ExtractionParticipants(1,participants).length >= competition.capacity ? true:false
-    if (!system.loading.competition && competition.id == undefined) {
+    if (!system.loading.competition && competition.id === undefined) {
       return (
         <Message mes="該当のデータはありません" />
       )
     }
     return (
       <Grid container spacing={1}>
-        { system.loading.competition && <Progress/> }
-        { !system.loading.competition && competition.id != undefined &&
+        { system.loading.competition  && <Progress/> }
+        { !system.loading.competition &&  competition.id !== undefined &&
         <>
           <Grid item xs={12} sm={12}>
             <div className="Detail">
@@ -178,13 +201,13 @@ class CompeDetail extends React.Component<Props,State> {
             </div>
             <Box display="flex" justifyContent="center">
              <List style={{paddingTop:0}}>
-                  <ListItem style={{padding:0}} button onClick={()=>this.props.history.push("/users/" + competition.user.sns_id)}>
-                   <ListItemAvatar style={{minWidth:40}}> 
-                    <Avatar src={process.env.PUBLIC_URL + "/"+ competition.user.avatar} aria-label="event" className={classes.avatar}/>
+                  <ListItem style={{padding:0}} button onClick={()=>this.props.history.push("/users/" + competition.user.screen_name)}>
+                   <ListItemAvatar> 
+                    <Avatar src={competition.user.avatar} aria-label="event" className={classes.avatar}/>
                    </ListItemAvatar> 
                    <ListItemText 
-                  primary={<Typography variant="caption" component="p">{competition.user.screen_name}</Typography>}
-                  secondary={<Typography variant="caption">@{competition.user.sns_id}</Typography>}/>
+                  primary={<Typography variant="caption" component="p">{competition.user.name}</Typography>}
+                  secondary={<Typography variant="caption">@{competition.user.screen_name}</Typography>}/>
                   </ListItem>
              </List>
             </Box>
@@ -197,14 +220,81 @@ class CompeDetail extends React.Component<Props,State> {
                   <KeyWords keyWords={competition.keyword.split(",")}/>
                 </Box>
                }
+               { ExtractionParticipants(1,participants).length > 0 &&
+                <Box display="flex" justifyContent="center" className={classes.box}>
+                  <AvatarGroup max={8}>
+                  {
+                    ExtractionParticipants(1,participants).map(val => (
+                      <Avatar className={classes.avatar}  alt={val.user.screen_name} src={val.user.avatar} />
+                    ))
+                  }
+                  </AvatarGroup>
+                </Box>
+               }
           </Grid>
+             <div className={classes.sticky}>
+                    <Grid item xs={12} sm={12}  >
+            <Paper elevation={0}  variant="outlined" className={classes.paper} >
+            { !session.login &&
+            <>
+              <Typography variant="h4" align="center" style={{fontWeight:700}}>
+                このイベントに参加する場合は、まずログインをしてください
+              </Typography>
+              <Typography component="p" align="center" >
+                <Button size="large" className={classes.button} variant="contained" disableElevation  color="primary" startIcon={<TwitterIcon/>}
+                onClick={() => this.props.login()}>
+                ログイン
+                </Button>
+              </Typography>
+              </>
+            }
+            {
+              session.login && !this.state.close &&
+              <>
+               <Typography variant="h4"  align="center" style={{fontWeight:700}}>
+               {over &&
+                 <span style={{color:colors.red[500]}}>只今キャンセル待ちになります</span>
+               }
+               {!over &&
+                <span>このイベントに参加しますか？</span>
+               }
+              </Typography>
+              <Typography component="p" className={classes.sanka} align="center" style={{fontWeight:700}}>
+                <Button variant="contained" disableElevation disabled={system.loading.participants || over || 
+                ParticipantsStatus(1,session.auth.id,participants)} 
+                onClick={() => this.handleParticipant(competition.id,1)} color="primary"  style={{color:"white",fontWeight:700}}>
+                  参加する
+                </Button>
+                <Button variant="contained" disableElevation disabled={system.loading.participants || 
+                ParticipantsStatus(2,session.auth.id,participants)}
+                onClick={() => this.handleParticipant(competition.id,2)} color="secondary" style={{color:"white",fontWeight:700}}>
+                  興味あり
+                </Button>
+                <Button variant="contained" disableElevation disabled={system.loading.participants || 
+                ParticipantsStatus(3,session.auth.id,participants)}
+                onClick={() => this.handleParticipant(competition.id,3)}  color="default" style={{fontWeight:700}}>
+                  不参加
+                </Button>
+              </Typography>
+              </>
+            }
+            { this.state.close && session.login &&
+              <>
+              <Typography  variant="h4" align="center" style={{fontWeight:700}}>
+                <span style={{color:colors.red[700]}}>このイベントの受付は終了しました</span>
+              </Typography>
+              </>
+            }
+            </Paper>
+          </Grid>
+            </div>
           <Grid item xs={12} sm={12}>
             <Paper elevation={0} variant="outlined" className={classes.paper}>
             { !system.loading.competition && competition.id !== undefined &&
             <Grid container spacing={1}>
               <Grid item xs={12} sm={12}>
-                <Typography variant="h4" style={{lineHeight:1.4}}>
-                <div style={{display: 'flex',alignItems: 'center',flexWrap: 'nowrap',}}>
+                <Typography variant="h4">
+                <div style={{display: 'flex',alignItems: 'left',flexWrap: 'nowrap',}}>
                  <PlaceIcon style={{fontSize:"1.0rem",color:colors.grey[600]}}/>
                  <span style={{marginLeft:5}}>
                   {competition.place_text == null ? "未定" : competition.place_text}
@@ -214,7 +304,7 @@ class CompeDetail extends React.Component<Props,State> {
               </Grid>
              <Grid item xs={12} sm={12}>
                 <Typography variant="h4">
-                <div style={{display: 'flex',alignItems: 'center',flexWrap: 'nowrap',}}>
+                <div style={{display: 'flex',alignItems: 'left',flexWrap: 'nowrap',}}>
                   <EventIcon style={{fontSize:"1.0rem",color:colors.grey[600]}}/> <span style={{marginLeft:5}}>{competition.event_day == null ? 
                   "未定" : dataFormatwithday(competition.event_day)}</span>
                 </div>
@@ -248,76 +338,38 @@ class CompeDetail extends React.Component<Props,State> {
             }
             </Paper>
           </Grid>
-          <Grid item xs={12} sm={12}>
-            <Paper elevation={0} variant="outlined"  className={classes.paper}>
-            { !session.login &&
-            <>
-              <Typography variant="h3" align="center" style={{fontWeight:700}}>
-                このイベントに参加する場合は、まずログインをしてください
-              </Typography>
-              <Typography component="p" align="center" >
-                <Button size="large" className={classes.button} variant="contained" disableElevation  color="primary" startIcon={<TwitterIcon/>}>
-                ログイン
-                </Button>
-              </Typography>
-              </>
-            }
-            {
-              session.login && !this.state.close &&
-              <>
-               <Typography variant="h3"  align="center" style={{fontWeight:700}}>
-               {over &&
-                 <span style={{color:colors.red[500]}}>このイベントは定員に達しました</span>
-               }
-               {!over &&
-                <span>このイベントに参加しますか？</span>
-               }
-              </Typography>
-              <Typography component="p" className={classes.sanka} align="center" style={{fontWeight:700}}>
-                <Button variant="contained" disableElevation disabled={system.loading.participants || over} 
-                onClick={() => this.handleParticipant(competition.id,1)} color="primary"  style={{color:"white",fontWeight:700}}>
-                  参加する
-                </Button>
-                <Button variant="contained" disableElevation disabled={system.loading.participants}
-                onClick={() => this.handleParticipant(competition.id,2)} color="secondary" style={{color:"white",fontWeight:700}}>
-                  興味あり
-                </Button>
-                <Button variant="contained" disableElevation disabled={system.loading.participants}
-                onClick={() => this.handleParticipant(competition.id,3)}  color="default" style={{fontWeight:700}}>
-                  不参加
-                </Button>
-              </Typography>
-              </>
-            }
-            { this.state.close && session.login &&
-            <>
-              <Typography component="p" align="center" style={{fontWeight:700}}>
-                <span style={{color:colors.red[700]}}>このイベントの受付は終了しました</span>
-              </Typography>
-              </>
-            }
-            </Paper>
-          </Grid>
           <Grid item xs={12} sm={12}> 
-            {participantsResult.status != 200 && <Message mes={participantsResult.cause}/>}
+            {participantsResult.status !== 200 && <Message mes={participantsResult.cause}/>}
             {system.loading.participants && <Progress/>}
-            {!system.loading.participants && participantsResult.status == 200 &&
+            {!system.loading.participants && participantsResult.status === 200 &&
             <Grid container spacing={1}>
+              { session.login &&
+              <Grid item xs={12} sm={12}>
+                <Paper elevation={0} variant="outlined" className={classes.paper}>
+                  <Box textAlign="center">
+                    <Button  variant="text" style={{fontWeight:700}} disableElevation  color="primary"
+                    onClick={() =>this.props.history.push("/dm?cid=" + competition.id ) }>
+                    DMを一括送信する
+                    </Button>
+                  </Box>
+                </Paper>
+              </Grid>
+              }
               <Grid item xs={12} sm={4}>
                 <Paper elevation={0} variant="outlined" className={classes.paper}>
                   <Typography variant="caption" style={{fontWeight:700}}>
-                  参加者({ExtractionParticipants(1,participants).length}人) { competition.capacity == null || competition.capacity == 0 ? "": "/ 定員:" + competition.capacity + "人"}
+                  参加者({ExtractionParticipants(1,participants).length}人) { competition.capacity === null || competition.capacity === 0 ? "": "/ 定員:" + competition.capacity + "人"}
                   </Typography>
                   <Divider/>
                   <List  style={{padding:"5px"}}>
                   { ExtractionParticipants(1,participants).map((data) => (
-                  <ListItem style={{padding:0}} key={data.user_id} button onClick={()=>this.props.history.push("/users/" + data.user.sns_id)}>
-                   <ListItemAvatar style={{padding:0,minWidth:40}}> 
-                    <Avatar  src={process.env.PUBLIC_URL + "/" + data.user.avatar} aria-label="event" className={classes.avatar}/>
+                  <ListItem style={{padding:0}} key={data.user_id} button onClick={()=>this.props.history.push("/users/" + data.user.screen_name)}>
+                   <ListItemAvatar style={{padding:0}}> 
+                    <Avatar  src={data.user.avatar} aria-label="event" className={classes.avatar2}/>
                    </ListItemAvatar> 
                    <ListItemText 
-                   primary={<Typography variant="caption" component="p">{data.user.screen_name}</Typography>}
-                  secondary={<Typography variant="caption" component="p">@{data.user.sns_id}</Typography>}/>
+                   primary={<Typography variant="caption" component="p">{data.user.name}</Typography>}
+                  secondary={<Typography variant="caption" component="p">@{data.user.screen_name}</Typography>}/>
                   </ListItem>
                   ))}
                 </List>
@@ -331,13 +383,13 @@ class CompeDetail extends React.Component<Props,State> {
                   <Divider/>
                   <List  style={{padding:"5px"}}>
                   { ExtractionParticipants(2,participants).map((data) => (
-                  <ListItem style={{padding:0}} key={data.user_id} button onClick={()=>this.props.history.push("/users/" + data.user.sns_id)}>
-                   <ListItemAvatar style={{padding:0,minWidth:40}}> 
-                    <Avatar  src={process.env.PUBLIC_URL + "/" + data.user.avatar} aria-label="event" className={classes.avatar}/>
+                  <ListItem style={{padding:0}} key={data.user_id} button onClick={()=>this.props.history.push("/users/" + data.user.screen_name)}>
+                   <ListItemAvatar style={{padding:0}}> 
+                    <Avatar  src={data.user.avatar} aria-label="event" className={classes.avatar2}/>
                    </ListItemAvatar> 
                    <ListItemText 
-                   primary={<Typography variant="caption" component="p">{data.user.screen_name}</Typography>}
-                  secondary={<Typography variant="caption" component="p">@{data.user.sns_id}</Typography>}/>
+                   primary={<Typography variant="caption" component="p">{data.user.name}</Typography>}
+                  secondary={<Typography variant="caption" component="p">@{data.user.screen_name}</Typography>}/>
                   </ListItem>
                   ))}
                 </List>
@@ -351,13 +403,13 @@ class CompeDetail extends React.Component<Props,State> {
                   <Divider/>
                   <List  style={{padding:"5px"}}>
                   { ExtractionParticipants(3,participants).map((data) => (
-                  <ListItem style={{padding:0}} key={data.user_id} button onClick={()=>this.props.history.push("/users/" + data.user.sns_id)}>
-                   <ListItemAvatar style={{padding:0,minWidth:40}}> 
-                    <Avatar  src={process.env.PUBLIC_URL + "/" + data.user.avatar} aria-label="event" className={classes.avatar}/>
+                  <ListItem style={{padding:0}} key={data.user_id} button onClick={()=>this.props.history.push("/users/" + data.user.screen_name)}>
+                   <ListItemAvatar style={{padding:0}}> 
+                    <Avatar  src={data.user.avatar} aria-label="event" className={classes.avatar2}/>
                    </ListItemAvatar> 
                    <ListItemText 
-                  primary={<Typography variant="caption" component="p">{data.user.screen_name}</Typography>}
-                  secondary={<Typography variant="caption" component="p">@{data.user.sns_id}</Typography>}/>
+                  primary={<Typography variant="caption" component="p">{data.user.name}</Typography>}
+                  secondary={<Typography variant="caption" component="p">@{data.user.screen_name}</Typography>}/>
                   </ListItem>
                   ))}
                 </List>
@@ -368,7 +420,7 @@ class CompeDetail extends React.Component<Props,State> {
           </Grid>
           <Grid item xs={12} sm={12}>
             <Paper variant="outlined" className={classes.paper}>
-            <Typography  variant="h3">
+            <Typography  variant="h4">
               <div style={{display: 'flex',alignItems: 'center',flexWrap: 'nowrap',}}>
                  <CommentIcon style={{fontSize:"1.0rem",color:colors.grey[600]}}/>
                  <span  style={{marginLeft:5}}> 
@@ -377,12 +429,12 @@ class CompeDetail extends React.Component<Props,State> {
               </div>
             </Typography>
             {system.loading.comments && <Progress/>}
-            {!system.loading.comments && commentResult.status == 200 &&
+            {!system.loading.comments && commentResult.status === 200 &&
             <List>
               { comments.map((data) => (
                   <ListItem key={data.id} divider style={{padding:0}} alignItems="flex-start">
-                   <ListItemAvatar style={{minWidth:40,verticalAlign:"top"}} > 
-                    <Avatar src={process.env.PUBLIC_URL + "/" + data.user.avatar} aria-label="event" className={classes.avatar}/>
+                   <ListItemAvatar > 
+                    <Avatar src={data.user.avatar} aria-label="event" className={classes.avatar2}/>
                    </ListItemAvatar> 
                    <ListItemText 
                   primary={<Typography variant="body2" component="p" dangerouslySetInnerHTML={{__html:nl2br(data.message)}}></Typography>}
@@ -396,7 +448,8 @@ class CompeDetail extends React.Component<Props,State> {
             <TextField  fullWidth multiline required id="comment" style={{marginTop:10}}  value={this.state.comment_str}
             onChange={(e) => this.setState({comment_str:e.target.value}) }
             variant="standard" error={this.state.error} helperText={this.state.helper} InputLabelProps={{className:classes.label}}/>
-            <Button variant="contained" disableElevation disabled={!!system.loading.comments}  onClick={() => this.send()} color="primary"  style={{marginTop:20,color:"white",fontWeight:700}}>
+            <Button variant="contained" disableElevation disabled={!!system.loading.comments}  onClick={() => this.send()} color="primary"  
+            style={{marginTop:20,color:"white",fontWeight:700}}>
               投稿する
             </Button>
             </>
@@ -429,6 +482,9 @@ const mapDispatchToProps = (dispatch:Dispatch)=>{
      },
      getParti(id:number){
        GetParticipants(id)(dispatch)
+     },
+     login() {
+       TwitterLogin()(dispatch)
      },
      getComments(id:number){
        GetComments(id)(dispatch)

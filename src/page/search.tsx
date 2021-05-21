@@ -1,9 +1,8 @@
 import React from 'react'
-import {FormControl,Button,TextField,FormLabel,FormControlLabel,Radio,RadioGroup,InputLabel,Typography,Grid,Paper,Select,MenuItem} from '@material-ui/core'
+import {FormControl,Button,TextField,FormLabel,FormControlLabel,Radio,RadioGroup,Typography,Grid,Paper} from '@material-ui/core'
 import {withRouter,RouteComponentProps} from 'react-router-dom'
 import {createStyles,Theme,withStyles,WithStyles} from '@material-ui/core/styles'
 import {dateFormatNotime,SearchLog} from '../util/util'
-import EventList from '../components/eventlist'
 import EventCard from '../components/EventCard'
 import {SearchCompetition} from '../store/app/api'
 import Progress from '../components/progress'
@@ -67,25 +66,25 @@ class Search extends React.Component<Props,State> {
          date:parse.date,
          keyword:parse.keyword,
          p: parse.p,
-         dis: parse.mode == 1? true:false
+         dis: parse.mode === 1 ? true:false
        })
-       const {p,date,mode,dis,keyword} = parse 
-       const inputdate = date == "" ? null: date
+       const {p,date,mode,keyword} = parse 
+       const inputdate = date === "" ? null: date
        const inputmode = Number(mode)
        this.props.search(p,keyword,inputdate,inputmode)
     }
   }
   parseQuery(props:Props):State{
     const parse = querystring.parse(props.location.search)
-    let mode:string = parse.mode == undefined ? "1": parse.mode as string
-    let p:string = parse.p == undefined ? "1": parse.p as string
-    let date:string = parse.date == undefined ? dateFormatNotime(new Date()): parse.date as string
-    let keyword:string = parse.q == undefined ? "": parse.q as string
+    let mode:string = parse.mode === undefined ? "1": parse.mode as string
+    let p:string = parse.p === undefined ? "1": parse.p as string
+    let date:string = parse.date === undefined ? dateFormatNotime(new Date()): parse.date as string
+    let keyword:string = parse.q === undefined ? "": parse.q as string
     return {
       mode:Number(mode),
       p:Number(p),
       date:date,
-      dis: mode == "1" ? true: false,
+      dis: mode === "1" ? true: false,
       keyword:keyword
     }
   }
@@ -96,7 +95,7 @@ class Search extends React.Component<Props,State> {
     })
   }
   handleRadio(e:React.ChangeEvent<{}>) {
-    if ((e.target as HTMLInputElement).value == '1') {
+    if ((e.target as HTMLInputElement).value === '1') {
       this.setState({
         mode: 1,
         dis: true
@@ -193,9 +192,9 @@ class Search extends React.Component<Props,State> {
           </Grid>
         </Paper>
       </Grid>
-        {searchResult.status != 200 && searchResult.status != 999 && <Message mes={searchResult.cause}/>}
+        {searchResult.status !== 200 && searchResult.status !== 999 && <Message mes={searchResult.cause}/>}
         {system.loading.search && <Progress/>}
-        {!system.loading.search && searchResult.status == 200 && 
+        {!system.loading.search && searchResult.status === 200 && 
         <>
      { competitions.payload.map((val) => ( 
       <Grid item xs={12} sm={12} >

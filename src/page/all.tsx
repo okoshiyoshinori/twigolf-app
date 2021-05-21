@@ -1,12 +1,8 @@
 import React from 'react'
 import Tabs from '@material-ui/core/Tabs'
 import Tab from '@material-ui/core/Tab'
-import Paper from '@material-ui/core/Paper'
 import Grid from '@material-ui/core/Grid'
-import Container from '@material-ui/core/Container'
 import {createStyles,Theme,withStyles,WithStyles} from '@material-ui/core/styles'
-import EventList from '../components/eventlist'
-import {List,ListItem} from '@material-ui/core'
 import Typography from '@material-ui/core/Typography'
 import {withRouter,RouteComponentProps} from 'react-router-dom'
 import {GetCompetitions} from '../store/app/api'
@@ -21,6 +17,7 @@ import querystring from 'query-string'
 import {SearchLog} from '../util/util'
 import Pagination from '@material-ui/lab/Pagination'
 import {Helmet} from 'react-helmet'
+import config from '../config/config'
 
 
 
@@ -91,9 +88,9 @@ class All extends React.Component<Props,State> {
   }
   render() {
     const {tabIndex} = this.state
-    const {classes,competitions,system}  = this.props
+    const {competitions,system}  = this.props
     const competitionsResult = SearchLog(system.result,"competitions")
-    const allPage:number = Math.ceil(competitions.allNumber/Number(process.env.REACT_APP_PERNUM))
+    const allPage:number = Math.ceil(competitions.allNumber/Number(config?.pagePerNum))
     return (
     <Grid container spacing={1}> 
       <div className="All">
@@ -109,26 +106,21 @@ class All extends React.Component<Props,State> {
       <Grid item xs={12} sm={12} style={{marginBottom:15,marginTop:15}}>
           <Tabs style={{borderBottom:"1px solid #dcdcdc"}} 
             value={tabIndex}
-            variant="standard"
+            variant="fullWidth"
             centered
             onChange={(e,val)=> this.handeleChange(e,val)}
           >
-          <Tab label="最新" value={1}/>
-          <Tab label="開催日"value={2}/>
-          <Tab label="締切日" value={3}/>
+          <Tab label="新着" value={1} style={{fontSize:"1.2rem"}}/>
+          <Tab label="開催日"value={2} style={{fontSize:"1.2rem"}}/>
+          <Tab label="締切日" value={3} style={{fontSize:"1.2rem"}} />
           </Tabs>
       </Grid>
      {system.loading.competitions && <Progress/>}
-     {competitionsResult.status != 200 && !system.loading.competitions && <Message mes={competitionsResult.cause}/>}
-     {competitionsResult.status == 200 && !system.loading.competitions && 
+     {competitionsResult.status !== 200 && !system.loading.competitions && <Message mes={competitionsResult.cause}/>}
+     {competitionsResult.status === 200 && !system.loading.competitions && 
      <>
-      { /*
-        <Paper variant="outlined">
-              <EventList data={competitions.payload}/>
-        </Paper>
-       */ }
       { competitions.payload.map((data) => (
-      <Grid item xs={12} sm={12} md={12}>
+      <Grid item xs={12} sm={12} md={6}>
         <EventCard data={data}/>
       </Grid>
       ) )
@@ -146,7 +138,7 @@ class All extends React.Component<Props,State> {
 const mapStateToProps = (state:RootState) => {
   return {
     competitions: state.app.competitions,
-    system:state.system
+    system:state.system,
   }
 }
 

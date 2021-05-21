@@ -46,6 +46,7 @@ export interface User {
   id:number,
   sns_id:string,
   screen_name:string,
+  name:string,
   real_name:string,
   real_name_kana:string,
   sex:number,
@@ -134,6 +135,11 @@ export interface PostRealName {
   real_name_kana: string
   sex:number,
   birthday:Date
+}
+
+export interface TwitterDm {
+  users:string[]
+  message:string
 }
 
 

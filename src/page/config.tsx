@@ -3,14 +3,14 @@ import {Dispatch} from 'redux'
 import {connect} from 'react-redux'
 import {RouteComponentProps,withRouter} from 'react-router-dom'
 import {withStyles,WithStyles,createStyles} from '@material-ui/styles'
-import {colors,FormControl,FormHelperText,Select,MenuItem,InputLabel,Box,Button,TextField,Theme,Grid,Typography,Paper} from '@material-ui/core'
+import {FormControl,FormHelperText,Select,MenuItem,InputLabel,Box,Button,TextField,Theme,Grid,Typography,Paper} from '@material-ui/core'
 import {Helmet} from 'react-helmet'
 import {RootState} from '../store'
 import {ResetResult} from '../store/system/actions'
 import {PostRealNameData} from '../store/app/api'
 import {PostRealName} from '../store/app/types'
 import {GetSession} from '../store/session/api'
-import {SearchLog,dateFormatNotime} from '../util/util'
+import {dateFormatNotime} from '../util/util'
 
 interface Props extends ReduxType,RouteComponentProps,WithStyles<typeof styles>{}
 type State = {
@@ -95,7 +95,7 @@ class Config extends React.Component<Props,State> {
     const {real_name} = this.state
     real_name.name.error = false
     real_name.name.error_message = "" 
-    if (real_name.name.value == "") {
+    if (real_name.name.value === "") {
       real_name.name.error = true
       real_name.name.error_message = "氏名を入力してください"
     }
@@ -116,7 +116,7 @@ class Config extends React.Component<Props,State> {
     const {real_name} = this.state
     real_name.kana.error = false
     real_name.kana.error_message = "" 
-    if (real_name.kana.value == "") {
+    if (real_name.kana.value === "") {
       real_name.kana.error = true
       real_name.kana.error_message = "ふりがなを入力してください"
     }
@@ -156,7 +156,7 @@ class Config extends React.Component<Props,State> {
     const {birthday} = this.state
     birthday.error = false
     birthday.error_message = ""
-    if (birthday.value == "") {
+    if (birthday.value === "") {
       birthday.error = true
       birthday.error_message = "選択してください"
     }
@@ -188,7 +188,7 @@ class Config extends React.Component<Props,State> {
     this.props.resetLog()
   }
   render() {
-    const {classes,session,system} = this.props
+    const {classes,system} = this.props
     const {real_name} = this.state
     return (
       <Grid container direction="row" justify="flex-start" spacing={2}>
@@ -202,7 +202,7 @@ class Config extends React.Component<Props,State> {
               設定
             </Typography>
             <Paper variant="outlined" className={classes.paper}>
-              <Typography variant="h2" style={{marginBottom:"10px"}}>
+              <Typography variant="h3" style={{marginBottom:"10px"}}>
               基本情報を登録する
               </Typography>
               <Typography variant="caption">

@@ -3,7 +3,7 @@ import {Dispatch} from 'redux'
 import {saveAs} from 'file-saver'
 import {SetCombinations,SetCompetition,SetUser,SetCompetitions,SetClubs,SetComments,SetParticipants,SetSearchResult} from './actions'
 import * as sys from '../system/actions' 
-import {BundleCombination,FetchResult,Competition,User,BundleParticipant,PostParticipant,PostComment,PostCompetition,PostRealName,GetCombination} from '../app/types'
+import {BundleCombination,FetchResult,Competition,User,BundleParticipant,PostParticipant,PostComment,PostCompetition,PostRealName,GetCombination,TwitterDm} from '../app/types'
 
 
 export const GetExcel = (cid:number) => {
@@ -12,11 +12,15 @@ export const GetExcel = (cid:number) => {
     await client.get(api.API_GET_EXCEL + "/" + cid,{responseType:"blob"}).then(res => {
       const data = new Blob([res.data],{type:res.data.type})
       saveAs(data,"組み合わせ表.xlsx")
+      dispatch(sys.SetSnack({status:"success",message:"ダウンロードが完了しました"}))
       dispatch(sys.SetLoading({excel:false}))
     }).catch(error =>{
       if (error.response) {
-        sys.SetSnack({status:"error",message:error.response.data.cause})
-        dispatch(sys.SetLoading({excel:false}))
+        dispatch(sys.SetSnack({status:"error",message:error.response.data.cause}))
+      } else if (error.request) {
+        dispatch(sys.SetSnack({status:"error",message:"ネットワークエラー"}))
+      } else {
+        dispatch(sys.SetSnack({status:"error",message:error.message}))
       }
     })
   }
@@ -33,6 +37,10 @@ export const GetCombinationData = (cid:number) => {
       if (error.response) {
         dispatch(sys.SetResult({name:"combinations",status:error.response.status,cause:error.response.data.cause}))
         dispatch(sys.SetLoading({combinations:false}))
+      } else if (error.request) {
+        dispatch(sys.SetSnack({status:"error",message:"ネットワークエラー"}))
+      } else {
+        dispatch(sys.SetSnack({status:"error",message:error.message}))
       }
     })
   }
@@ -50,7 +58,11 @@ export const GetUser = (id:string) => {
        if (error.response) {
         dispatch(sys.SetResult({name:"user",status:error.response.status,cause:error.response.data.cause}))
         dispatch(sys.SetLoading({user:false}))
-       }
+      } else if (error.request) {
+        dispatch(sys.SetSnack({status:"error",message:"ネットワークエラー"}))
+      } else {
+        dispatch(sys.SetSnack({status:"error",message:error.message}))
+      }
     })
   }
 }
@@ -67,6 +79,10 @@ export const GetCompetition =  (id:number) => {
       if (error.response) {
         dispatch(sys.SetResult({name:"competition",status:error.response.status,cause:error.response.data.cause}))
         dispatch(sys.SetLoading({competition:false}))
+      } else if (error.request) {
+        dispatch(sys.SetSnack({status:"error",message:"ネットワークエラー"}))
+      } else {
+        dispatch(sys.SetSnack({status:"error",message:error.message}))
       }
     })
   }
@@ -89,6 +105,10 @@ export const GetUserCompetitions = (id:string,page:number,sort:number) => {
       if (error.response) {
         dispatch(sys.SetResult({name:"competitions",status:error.response.status,cause:error.response.data.cause}))
         dispatch(sys.SetLoading({competitions:false}))
+      } else if (error.request) {
+        dispatch(sys.SetSnack({status:"error",message:"ネットワークエラー"}))
+      } else {
+        dispatch(sys.SetSnack({status:"error",message:error.message}))
       }
     })
   }
@@ -110,7 +130,11 @@ export const GetCompetitions = (page:number,mode:number) => {
     }).catch(error => {
       if (error.response) {
         dispatch(sys.SetResult({name:"competitions",status:error.response.status,cause:error.response.data.cause}))
-        dispatch(sys.SetLoading({competitions:false}))
+        dispatch(sys.SetLoading({competitions:true}))
+      } else if (error.request) {
+        dispatch(sys.SetSnack({status:"error",message:"ネットワークエラー"}))
+      } else {
+        dispatch(sys.SetSnack({status:"error",message:error.message}))
       }
     })
   }
@@ -131,8 +155,12 @@ export const GetClubs = (keyword:string) => {
     }).catch(error => {
       if (error.response) {
         dispatch(sys.SetResult({name:"clubs",status:error.response.status,cause:error.response.data.cause}))
+        dispatch(sys.SetLoading({clubs:true}))
+      } else if (error.request) {
+        dispatch(sys.SetSnack({status:"error",message:"ネットワークエラー"}))
+      } else {
+        dispatch(sys.SetSnack({status:"error",message:error.message}))
       }
-      dispatch(sys.SetLoading({clubs:false}))
     })
   }
 }
@@ -149,8 +177,11 @@ export const GetParticipants = (comptition_id:number) => {
       if (error.response) {
         dispatch(sys.SetResult({name:"participants",status:error.response.status,cause:error.response.data.cause}))
         dispatch(sys.SetLoading({participants:false}))
+      } else if (error.request) {
+        dispatch(sys.SetSnack({status:"error",message:"ネットワークエラー"}))
+      } else {
+        dispatch(sys.SetSnack({status:"error",message:error.message}))
       }
-      dispatch(sys.SetLoading({participants:false}))
     })
   }
 }
@@ -166,7 +197,11 @@ export const GetParticipantsWithName = (comptition_id:number) => {
     }).catch(error => {
       if (error.response) {
         dispatch(sys.SetResult({name:"participants",status:error.response.status,cause:error.response.data.cause}))
-        dispatch(sys.SetLoading({participants:false}))
+        dispatch(sys.SetLoading({participants:true}))
+      } else if (error.request) {
+        dispatch(sys.SetSnack({status:"error",message:"ネットワークエラー"}))
+      } else {
+        dispatch(sys.SetSnack({status:"error",message:error.message}))
       }
     })
   }
@@ -183,8 +218,12 @@ export const GetComments = (competiton_id:number) => {
     }).catch(error => {
       if (error.response) {
         dispatch(sys.SetResult({name:"comments",status:error.response.status,cause:error.response.data.cause}))
+        dispatch(sys.SetLoading({comments:false}))
+      } else if (error.request) {
+        dispatch(sys.SetSnack({status:"error",message:"ネットワークエラー"}))
+      } else {
+        dispatch(sys.SetSnack({status:"error",message:error.message}))
       }
-      dispatch(sys.SetLoading({comments:false}))
     })
   }
 }
@@ -206,6 +245,10 @@ export const SearchCompetition = (p:number,q:string | null,date:string | null,mo
       if (error.response) {
         dispatch(sys.SetResult({name:"search",status:error.response.status,cause:error.response.data.cause}))
         dispatch(sys.SetLoading({search:false}))
+      } else if (error.request) {
+        dispatch(sys.SetSnack({status:"error",message:"ネットワークエラー"}))
+      } else {
+        dispatch(sys.SetSnack({status:"error",message:error.message}))
       }
     })
   }
@@ -223,6 +266,11 @@ export const PostComments = (data:PostComment) => {
        if (error.response) {
         dispatch(sys.SetResult({name:"comments",status:error.response.status,cause:error.response.data.cause}))
         dispatch(sys.SetSnack({status:"error",message:error.response.data.cause}))
+        dispatch(sys.SetLoading({comments:true}))
+      } else if (error.request) {
+        dispatch(sys.SetSnack({status:"error",message:"ネットワークエラー"}))
+      } else {
+        dispatch(sys.SetSnack({status:"error",message:error.message}))
       }
     })
   }
@@ -240,6 +288,11 @@ export const PostPatricipant = (data:PostParticipant) => {
       if (error.response) {
         dispatch(sys.SetResult({name:"participants",status:error.response.status,cause:error.response.data.cause}))
         dispatch(sys.SetSnack({status:"error",message:error.response.data.cause}))
+        dispatch(sys.SetLoading({participants:false}))
+      } else if (error.request) {
+        dispatch(sys.SetSnack({status:"error",message:"ネットワークエラー"}))
+      } else {
+        dispatch(sys.SetSnack({status:"error",message:error.message}))
       }
     })
   }
@@ -257,6 +310,11 @@ export const PostBundlePatricipant = (data:BundleParticipant) => {
       if (error.response) {
         dispatch(sys.SetResult({name:"participants",status:error.response.status,cause:error.response.data.cause}))
         dispatch(sys.SetSnack({status:"error",message:error.response.data.cause}))
+        dispatch(sys.SetLoading({participants:false}))
+      } else if (error.request) {
+        dispatch(sys.SetSnack({status:"error",message:"ネットワークエラー"}))
+      } else {
+        dispatch(sys.SetSnack({status:"error",message:error.message}))
       }
     })
   }
@@ -265,13 +323,20 @@ export const PostBundlePatricipant = (data:BundleParticipant) => {
 
 export const PostCompetitionDate = (data:PostCompetition) => {
   return async (dispatch:Dispatch) => {
+    dispatch(sys.SetLoading({competition:true}))
     await client.post(api.API_POST_COMPETITION,{...data}).then((res)=> {
       dispatch(sys.SetResult({name:"competitions",status:200,cause:res.data.cause}))
       dispatch(sys.SetSnack({status:"success",message:res.data.cause}))
+      dispatch(sys.SetLoading({competition:false}))
     }).catch(error => {
       if (error.response) {
         dispatch(sys.SetResult({name:"competitions",status:error.response.status,cause:error.response.data.cause}))
         dispatch(sys.SetSnack({status:"error",message:error.response.data.cause}))
+        dispatch(sys.SetLoading({competition:false}))
+      } else if (error.request) {
+        dispatch(sys.SetSnack({status:"error",message:"ネットワークエラー"}))
+      } else {
+        dispatch(sys.SetSnack({status:"error",message:error.message}))
       }
     })
   }
@@ -289,7 +354,11 @@ export const PostRealNameData = (data:PostRealName) => {
         dispatch(sys.SetResult({name:"post_real_name",status:error.response.status,cause:error.response.data.cause}))
         dispatch(sys.SetSnack({status:"error",message:error.response.data.cause}))
         dispatch(sys.SetLoading({user:false}))
-       }
+       } else if (error.request) {
+        dispatch(sys.SetSnack({status:"error",message:"ネットワークエラー"}))
+       } else {
+        dispatch(sys.SetSnack({status:"error",message:error.message}))
+      }
     })
   }
 }
@@ -307,6 +376,10 @@ export const PostCombinationData = (data:BundleCombination,cid:number) => {
         dispatch(sys.SetResult({name:"combinations",status:error.response.status,cause:error.response.data.cause}))
         dispatch(sys.SetSnack({status:"error",message:error.response.data.cause}))
         dispatch(sys.SetLoading({combinations:false}))
+      } else if (error.request) {
+        dispatch(sys.SetSnack({status:"error",message:"ネットワークエラー"}))
+      } else {
+        dispatch(sys.SetSnack({status:"error",message:error.message}))
       }
     })
   }
@@ -322,7 +395,41 @@ export const DeleteCompetition = (id:number) => {
       if (error.response) {
         dispatch(sys.SetResult({name:"delete_competition",status:error.response.status,cause:error.response.data.cause}))
         dispatch(sys.SetSnack({status:"error",message:error.response.data.cause}))
+      } else if (error.request) {
+        dispatch(sys.SetSnack({status:"error",message:"ネットワークエラー"}))
+      } else {
+        dispatch(sys.SetSnack({status:"error",message:error.message}))
       }
+    })
+  }
+}
+
+export const SendDM = (data:TwitterDm) => {
+  return async (dispatch:Dispatch) => {
+    dispatch(sys.SetLoading({dm:true}))
+    await client.post(api.API_DM,{...data}).then((res) => {
+      dispatch(sys.SetResult({name:"send_dm",status:200,cause:res.data.cause}))
+      dispatch(sys.SetSnack({status:"success",message:res.data.cause}))
+      dispatch(sys.SetLoading({dm:false}))
+    }).catch(error =>{
+      if (error.response) {
+        dispatch(sys.SetResult({name:"send_dm",status:error.response.status,cause:error.response.data.cause}))
+        dispatch(sys.SetLoading({dm:true}))
+      } else if (error.request) {
+        dispatch(sys.SetSnack({status:"error",message:"ネットワークエラー"}))
+      } else {
+        dispatch(sys.SetSnack({status:"error",message:error.message}))
+      }
+    })
+  }
+}
+
+export const TwitterLogin = () => {
+  return async(dispatch:Dispatch) => {
+    await client.get(api.API_TWITTER_LOGIN).then(res => {
+      window.location.href = res.data
+    }).catch(error =>{
+      dispatch(sys.SetSnack({status:"error",message:error.response.data.cause}))
     })
   }
 }

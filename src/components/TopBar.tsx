@@ -1,25 +1,11 @@
 import AppBar from '@material-ui/core/AppBar'
-import Button from '@material-ui/core/Button'
 import Typography from '@material-ui/core/Typography'
 import Toolbar from '@material-ui/core/Toolbar'
-import Hidden from '@material-ui/core/Hidden'
-import Drawer from '@material-ui/core/Drawer'
 import Avatar from '@material-ui/core/Avatar'
-import List from '@material-ui/core/List'
-import InboxIcon from '@material-ui/icons/MoveToInbox'
-import Divider from '@material-ui/core/Divider'
-import ListItem from '@material-ui/core/ListItem'
-import ListItemIcon from '@material-ui/core/ListItemIcon'
-import ListItemText from '@material-ui/core/ListItemText'
-import MailIcon from '@material-ui/icons/Mail'
-import MenuIcon from '@material-ui/icons/Menu'
+import {colors} from '@material-ui/core'
 import ExitToAppIcon from '@material-ui/icons/ExitToApp'
 import IconButton from '@material-ui/core/IconButton'
-import Tooltip from '@material-ui/core/Tooltip'
-import Box from '@material-ui/core/Box'
-import Badge from '@material-ui/core/Badge'
-import NotificationsIcon from '@material-ui/icons/Notifications'
-import {makeStyles,Theme,createStyles,withStyles,WithStyles,StyleRules} from '@material-ui/core/styles'
+import {Theme,createStyles,withStyles,WithStyles} from '@material-ui/core/styles'
 import React from 'react'
 import {withRouter,RouteComponentProps} from 'react-router-dom'
 import {Session} from '../store/session/types'
@@ -45,29 +31,35 @@ const styles = (theme:Theme) => createStyles({
   },
   title: {
     padding:"10px 0px 10px 20px"
+  },
+  avatar: {
+    width:40,
+    height:40,
+    padding:1,
+    background:colors.grey[100],
+    borderRadius: "50%",
+    margin:'auto',
+    '& > img': {
+        borderRadius: "50%"
+      }
   }
 })
 
-type State = {
-  mobileOpen: boolean
-}
+type State = {}
 
 interface Props extends RouteComponentProps,WithStyles<typeof styles>{
   session:Session
   handler:Function
+  loginHandler: Function
 }
 
 
 class TopBar extends React.Component<Props,State> {
-  constructor(props:any) {
-    super(props)
-    this.state = {
-      mobileOpen: false
-    }
+  login() {
+    this.props.loginHandler()
   }
   handleMobileToggle = () => {
     this.setState(state => ({
-      mobileOpen: !state.mobileOpen
     }))
   }
   handleAvatarClick(){
@@ -77,23 +69,21 @@ class TopBar extends React.Component<Props,State> {
   }
   render() {
     const { classes,session } = this.props
-    const { mobileOpen } = this.state
     return (
     <div className={classes.root}>
       <AppBar position="fixed" className={classes.appBar} >
         <Toolbar>
           <Typography  className={classes.grow} >
-            <img src={`${process.env.PUBLIC_URL}/twi_logo.jpeg`} />
+          <a href="/">  <img alt="logo" src={`${process.env.PUBLIC_URL}/logo.png`} width="80px" style={{marginTop:5}} /> </a>
           </Typography>
           { !session.login &&
-          <IconButton edge="end" color="inherit" arial-label="login">
+          <IconButton edge="end" color="inherit" arial-label="login" onClick={() => this.login()} size="small">
             <ExitToAppIcon/>
           </IconButton>
            }
            { session.login &&
-
            <IconButton onClick={()=> this.handleAvatarClick()}  size="small">
-           <Avatar  src={process.env.PUBLIC_URL + "/" + session.auth.avatar} />
+           <Avatar  src={session.auth.avatar} className={classes.avatar} />
            </IconButton>
            }
         </Toolbar>

@@ -27,6 +27,7 @@ export interface Loading {
   combinations:boolean
   session:boolean
   excel:boolean
+  dm:boolean
 }
 
 export type snackStatus = "error" | "warning" | "info" | "success" | null
@@ -76,8 +77,12 @@ export interface SessionLoading {
   session:boolean
 }
 
+export interface DmLoading {
+  dm:boolean
+}
+
 export type NowLoading = CompetitionLoading | CompetitionsLoading | ClubLoading | ParticipantsLoading | CommentsLoading |
-    SearchLoading | UserLoading | CombinationLoading | SessionLoading | ExcelLoading
+    SearchLoading | UserLoading | CombinationLoading | SessionLoading | ExcelLoading | DmLoading
 
 export interface SetLoading {
   type:typeof SET_LOADING,

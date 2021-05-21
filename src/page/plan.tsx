@@ -1,13 +1,10 @@
 import React from 'react'
 import {RouteComponentProps,withRouter} from 'react-router-dom'
 import {withStyles,WithStyles,createStyles} from '@material-ui/styles'
-import {Theme,Divider,Paper} from '@material-ui/core'
-import {colors,Menu,MenuItem,Box,Container,Button,List,ListItem,ListItemAvatar,ListItemText,Avatar,Grid,Tabs,Tab,Card,Typography} from '@material-ui/core'
-import EventList from '../components/eventlist'
+import {Theme,Paper} from '@material-ui/core'
+import {Card,CardContent,colors,IconButton,Menu,MenuItem,Box,List,ListItemSecondaryAction,ListItem,ListItemAvatar,ListItemText,Avatar,Grid,Tabs,Tab,Typography} from '@material-ui/core'
 import EventCard from '../components/EventCard'
-import {User} from '../store/app/types'
 import {GetUser,GetUserCompetitions} from '../store/app/api'
-import Progress from '../components/progress'
 import Message from '../components/message'
 import {RootState} from '../store'
 import {connect} from 'react-redux' 
@@ -17,11 +14,13 @@ import {SearchLog} from '../util/util'
 import {ResetResult} from '../store/system/actions'
 import Pagination from '@material-ui/lab/Pagination'
 import {Helmet} from 'react-helmet'
+import config from '../config/config'
+import MoreHorizIcon from '@material-ui/icons/MoreHoriz'
 
 const {TwitterFollowButton} = require("react-twitter-embed")
 
 interface MatchParams {
-  snsid:string
+  screen_name:string
 }
 
 interface Props extends ReduxType,RouteComponentProps<MatchParams>,WithStyles<typeof styles>{}
@@ -30,6 +29,7 @@ type State = {
   tabIndex:number
   page:number
   anchorEl:HTMLElement | null
+  anchorUserEl:HTMLElement | null
 }
 
 const styles = (theme:Theme) => createStyles({
@@ -38,6 +38,12 @@ const styles = (theme:Theme) => createStyles({
   paper: {
     padding:"15px",
     borderRadius: "10px"
+  },
+  card: {
+    textAlign:"center",
+  },
+  contents: {
+      paddingBottom:0,
   },
   link: {
     color:theme.palette.primary.dark
@@ -54,9 +60,37 @@ const styles = (theme:Theme) => createStyles({
   selected: {
     color:"#0069c0"
   },
+  description: {
+      display:"-webkit-box",
+      boxOrient:"vertical",
+      overflow:"hidden",
+      color:colors.grey[900],
+      lineClamp:2,
+      textAlign:"left",
+      paddingLeft:40,
+      paddingRight:40,
+      marginTop:15
+  },
   avatar: {
-    width: theme.spacing(5),
-    height: theme.spacing(5)
+    width:60,
+    height:60,
+    padding:2,
+    background:"linear-gradient(to right, #8a2387, #e94057, #f27121)",
+    borderRadius: "50%",
+    margin:'auto',
+    '& > img': {
+        borderRadius: "50%"
+      }
+  },
+  heading: {
+    fontWeight: 'bold',
+    letterSpacing: '0.5px',
+    marginTop: 8,
+    marginBottom: 0,
+  },
+  subheading: {
+    color: theme.palette.grey[500],
+    marginBottom: '0.875em',
   }
 })
 
@@ -67,12 +101,13 @@ class Plan extends React.Component<Props,State> {
     this.state = {
       tabIndex:tabIndex,
       page:page,
-      anchorEl:null
+      anchorEl:null,
+      anchorUserEl:null
     }
   }
   componentDidMount() {
-    this.props.getUserCompetitions(this.props.match.params.snsid,this.state.page,this.state.tabIndex)
-    this.props.getUser(this.props.match.params.snsid)
+    this.props.getUserCompetitions(this.props.match.params.screen_name,this.state.page,this.state.tabIndex)
+    this.props.getUser(this.props.match.params.screen_name)
   }
   handeleChange(e:React.ChangeEvent<{}>,val:number) {
     this.setState({tabIndex:val})
@@ -85,9 +120,19 @@ class Plan extends React.Component<Props,State> {
       anchorEl:null
     })
   }
+  handleUserClose() {
+      this.setState({
+        anchorUserEl:null
+        })
+    }
   handleLink(link:string) {
     this.props.history.push(link)
   }
+  handleUserPopUp(e:React.MouseEvent<HTMLElement>) {
+      this.setState({
+        anchorUserEl: e.currentTarget
+        })
+    }
   handlePopUp(e:React.MouseEvent<HTMLElement>) {
     e.stopPropagation()
     this.setState({
@@ -103,30 +148,30 @@ class Plan extends React.Component<Props,State> {
   parseQuery(props:Props):any {
     const parse = querystring.parse(props.location.search)
     return {
-      tabIndex:parse.sort == undefined ? 1: Number(parse.sort),
-      page:parse.p == undefined ? 1: Number(parse.p)
+      tabIndex:parse.sort === undefined ? 4: Number(parse.sort),
+      page:parse.p === undefined ? 1: Number(parse.p)
     }
   }
   componentWillUnmount() {
     this.props.resetLog()
   }
   componentDidUpdate(PrevProps:Props) {
-    if ( this.props.location.search != PrevProps.location.search) {
+    if ( this.props.location.search !== PrevProps.location.search) {
       const {page,tabIndex} = this.parseQuery(this.props)
       this.setState({
         tabIndex:tabIndex,
         page:page
       })
-      this.props.getUserCompetitions(this.props.match.params.snsid,page,tabIndex)
+      this.props.getUserCompetitions(this.props.match.params.screen_name,page,tabIndex)
     }
-    if (this.props.location.pathname != PrevProps.location.pathname ) {
+    if (this.props.location.pathname !== PrevProps.location.pathname ) {
       const {page,tabIndex} = this.parseQuery(this.props)
       this.setState({
         tabIndex:tabIndex,
         page:page
       })
-      this.props.getUser(this.props.match.params.snsid)
-      this.props.getUserCompetitions(this.props.match.params.snsid,page,tabIndex)
+      this.props.getUser(this.props.match.params.screen_name)
+      this.props.getUserCompetitions(this.props.match.params.screen_name,page,tabIndex)
     }
   }
   render() {
@@ -134,13 +179,13 @@ class Plan extends React.Component<Props,State> {
     const {tabIndex} = this.state
     const competitionsResult = SearchLog(system.result,"competitions")
     const userResult = SearchLog(system.result,"user")
-    const mypage = user.id == session.auth.id ? true:false
-    const allPage:number = Math.ceil(competitions.allNumber/Number(process.env.REACT_APP_PERNUM))
-    if (userResult.status != 200 && userResult.status != 999 ) { return ( <Message mes={userResult.cause}/> )}
+    const mypage = user.id === session.auth.id ? true:false
+    const allPage:number = Math.ceil(competitions.allNumber/Number(config?.pagePerNum))
+    if (userResult.status !== 200 && userResult.status !== 999 ) { return ( <Message mes={userResult.cause}/> )}
     return (
     <>
     <Grid container direction="row" justify="flex-start" spacing={1} >
-     {userResult.status == 200 && !system.loading.user &&
+     {userResult.status === 200 && !system.loading.user &&
      <>
       <Grid item xs={12} sm={12}>
       <div className="Plan">
@@ -148,60 +193,71 @@ class Plan extends React.Component<Props,State> {
          <title>{user.screen_name}さんのマイページ</title>
         </Helmet>
       </div>
-        <Typography variant="h1" style={{marginBottom:"10px"}}>
-          {user.screen_name}さんのマイページ 
-        </Typography >
-        <Paper variant="outlined" className={classes.paper} >
-          <List>
+        <Paper elevation={0} variant="outlined" className={classes.paper} style={{paddingBottom:0,marginBottom:15}} > 
+        <Card className={classes.card} elevation={0}>
+            <CardContent className={classes.contents}>
+              <Avatar className={classes.avatar} src={user.avatar}/>
+              <Typography variant="h4" className={classes.heading}>
+                {user.name}
+              </Typography>
+              <Typography variant="subtitle2" className={classes.subheading}>
+                {user.screen_name}
+              </Typography>
+              {mypage &&
+                <IconButton edge="end" size="small" aria-label="more" onClick={(e) => this.handleUserPopUp(e)}>
+                  <MoreHorizIcon/>
+                </IconButton>
+              }
+              {!mypage &&
+                  <TwitterFollowButton screenName={user.screen_name} />
+              }
+              <Typography variant="caption" component="p" className={classes.description} >
+                {user.description}
+              </Typography>
+            </CardContent>
+        </Card>
+        { /*
+          <List style={{paddingTop:0,paddingBottom:0}}>
             <ListItem style={{padding:0}} alignItems="flex-start">
+            { mypage &&
+            <ListItemSecondaryAction>
+                    <IconButton edge="end" size="small" aria-label="more" onClick={(e) => this.handleUserPopUp(e)}>
+                      <MoreVertIcon />
+                    </IconButton>
+            </ListItemSecondaryAction>
+            }
               <ListItemAvatar style={{minWidth:50}}> 
-                <Avatar src={process.env.PUBLIC_URL + "/" + user.avatar} aria-label="event" className={classes.avatar}/>
+                <Avatar src={user.avatar} variant="rounded" aria-label="event" className={classes.avatar}/>
               </ListItemAvatar> 
               <ListItemText 
-                  primary={<Typography variant="caption" style={{color:"#000"}}>{user.screen_name}</Typography>}
+                  primary={<Typography variant="h4" style={{color:colors.grey[900],fontWeight:"bold"}}>{user.name}</Typography>}
                   secondary={
                     <>
-                    <Typography variant="caption" component="p" style={{color:"#000"}}>@{user.sns_id}</Typography>
-                    <Typography variant="caption" component="p" style={{color:"#444"}}>{user.description}</Typography>
+                    <Typography variant="caption" component="p" style={{color:colors.grey[700]}}>@{user.screen_name}</Typography>
                     </>
-                    }/>
+                    }
+                  />
               </ListItem>
           </List>
-          {!mypage &&
-          <Box display="flex" flexDirection="row" justifyContent="space-between">
-            <TwitterFollowButton screenName={user.sns_id} />
-          </Box>
-          }
-          {mypage &&  
-          <Box display="flex" flexDirection="row" justifyContent="left">
-            <Button variant="text" size="medium"  onClick={()=> this.props.history.push("/creation")} disableElevation  
-               style={{fontWeight:700}} color="primary" >
-                イベント作成
-            </Button>
-            <Button variant="text" size="medium"  onClick={()=> this.props.history.push("/config")} disableElevation color="primary" 
-               style={{fontWeight:700}} >
-               設定
-            </Button>
-          </Box>
-          }
+          */}
+          <Tabs  
+            value={tabIndex}
+            variant="fullWidth"
+            centered
+            style={{marginTop:13}}
+            onChange={(e,val)=> this.handeleChange(e,val)}>
+              <Tab label="主 催" value={4} style={{fontSize:"1.2rem"}} />
+              <Tab label="今 後" value={1} style={{fontSize:"1.2rem"}} />
+              <Tab label="過 去" value={2} style={{fontSize:"1.2rem"}}/>
+              <Tab label="未 定" value={3} style={{fontSize:"1.2rem"}}/>
+          </Tabs>
         </Paper>
     </Grid>
-    <Grid item xs={12} sm={12} style={{marginBottom:15,marginTop:15}}>
-      <Tabs style={{borderBottom:"1px solid #dcdcdc"}} 
-        value={tabIndex}
-        variant="standard"
-        centered
-        onChange={(e,val)=> this.handeleChange(e,val)}>
-              <Tab label="今 後" value={1} />
-              <Tab label="過 去" value={2} />
-              <Tab label="未 定" value={3} />
-      </Tabs>
-    </Grid>
-   {competitionsResult.status != 200 && competitionsResult.status != 999  && <Message mes={competitionsResult.cause}/>}
-   {competitionsResult.status == 200 && !system.loading.competitions &&
+   {competitionsResult.status !== 200 && competitionsResult.status !== 999  && <Message mes={competitionsResult.cause}/>}
+   {competitionsResult.status === 200 && !system.loading.competitions &&
     <>
     { competitions.payload.map((data) => (
-     <Grid item xs={12} sm={12}>
+     <Grid item xs={12} sm={6}>
       <EventCard data={data} session={session} handler={this.handlePopUp.bind(this)} />
      </Grid>
      ))}
@@ -223,6 +279,18 @@ class Plan extends React.Component<Props,State> {
        <MenuItem onClick={() => this.handleLink("/creation?cid=" + this.state.anchorEl?.getAttribute("data-id")) }>編集</MenuItem>
        <MenuItem onClick={() => this.handleLink("/pa_management?cid=" + this.state.anchorEl?.getAttribute("data-id")) } >参加管理</MenuItem>
        <MenuItem onClick={() => this.handleLink("/compe_management?cid=" + this.state.anchorEl?.getAttribute("data-id")) } >ペアリング</MenuItem>
+       <MenuItem onClick={() => this.handleLink("/dm?cid=" + this.state.anchorEl?.getAttribute("data-id")) } >DM送信</MenuItem>
+    </Menu>
+    <Menu 
+       keepMounted
+       anchorEl={this.state.anchorUserEl}
+       open={Boolean(this.state.anchorUserEl)}
+       onClose={(e) => this.handleUserClose()}
+       id="menu2"
+     >
+       <MenuItem onClick={() => this.handleLink("/creation")} >イベント作成</MenuItem>
+       <MenuItem onClick={() => this.handleLink("/config")} >設定</MenuItem>
+       <MenuItem onClick={() => this.handleLink("/dm")} >DM送信</MenuItem>
     </Menu>
     </>
     )

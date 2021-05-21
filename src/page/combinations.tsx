@@ -1,13 +1,12 @@
 import React from 'react'
 import {RouteComponentProps,withRouter} from 'react-router-dom'
 import {withStyles,WithStyles,createStyles} from '@material-ui/styles'
-import {Table,TableBody,TableHead,TableRow,TableContainer,TableCell,Box,Divider,TextField,Button,Avatar,List,colors,ListItem,CircularProgress,ListItemAvatar,ListItemText,Theme,Grid,Typography,Paper} from '@material-ui/core'
+import {Table,TableBody,TableHead,TableRow,TableContainer,TableCell,colors,Theme,Grid,Typography,Paper} from '@material-ui/core'
 import {RootState} from '../store'
 import {connect} from 'react-redux' 
 import {Dispatch} from 'redux'
-import {Competition} from '../store/app/types'
 import {GetCompetition,GetParticipants,GetCombinationData} from '../store/app/api'
-import {getStatus,getAge,getSex,SearchLog,dateFormatwithTime,getInOut,getName,dateFormat,getAvatar} from '../util/util'
+import {SearchLog,dateFormatwithTime,getInOut,getName} from '../util/util'
 import {ResetResult} from '../store/system/actions'
 import Progress from '../components/progress'
 import Message from '../components/message'
@@ -28,7 +27,7 @@ const styles = (theme:Theme) => createStyles({
   },
   body: {
     '& > *': {
-        fontSize: 13,
+        fontSize: 14,
       }
   },
   table: {
@@ -37,7 +36,7 @@ const styles = (theme:Theme) => createStyles({
     minWidth:650,
   },
   header: {
-    backgroundColor:colors.teal[500],
+    backgroundColor:colors.grey[600],
     '& > *': {
         fontWeight:600,
         fontSize: 13,
@@ -90,9 +89,6 @@ const styles = (theme:Theme) => createStyles({
 interface State{}
 
 class Combinations extends React.Component<Props,State> {
-  constructor(props:Props) {
-    super(props)
-  }
   componentDidMount(){
     const cid = this.props.match.params.cid
     this.props.getdata(Number(cid))
@@ -102,14 +98,14 @@ class Combinations extends React.Component<Props,State> {
   render(){
     const {classes,competition,system,combinations,participants} = this.props
     const log = SearchLog(system.result,"combinations")
-    if (!system.loading.competition && competition.id == undefined) {
+    if (!system.loading.competition && competition.id === undefined) {
       return (
         <Message mes="該当のデータはありません" />
       )
     }
     return (
       <Grid container spacing={1}>
-       { system.loading.competition || system.loading.combinations && <Progress/> }
+       { (system.loading.competition || system.loading.combinations) && <Progress/> }
        { !system.loading.competition && !system.loading.combinations &&
        <>
         <div className="Detail">
@@ -122,7 +118,7 @@ class Combinations extends React.Component<Props,State> {
               ペアリング
             </Typography>
           <Paper elevation={0} variant="outlined" className={classes.paper}>
-            <Typography variant="h2" style={{lineHeight:1.4,marginBottom:15}}>
+            <Typography variant="h3" style={{lineHeight:1.4,marginBottom:15}}>
             {competition.title}
             </Typography>
             <Typography variant="caption" style={{marginBottom:20}}>
@@ -141,8 +137,8 @@ class Combinations extends React.Component<Props,State> {
             </Typography>
           </Paper>
         </Grid>
-        { log.status != 999 && log.status != 200 && <Message mes={log.cause} />}
-        {  log.status == 200  &&
+        { log.status !== 999 && log.status !== 200 && <Message mes={log.cause} />}
+        {  log.status === 200  &&
         <Grid item xs={12} sm={12}>
           <TableContainer elevation={0} component={Paper} style={{width:"100%"}}>
               <Table size="medium" className={classes.table} >

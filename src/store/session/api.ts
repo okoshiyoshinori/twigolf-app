@@ -2,7 +2,6 @@ import {SetLoading,SetSnack,SetResult} from '../system/actions'
 import {SetSessionAuth} from './actions'
 import {SetSessionLogin} from './actions'
 import {DelSession} from './actions'
-import * as types from './types'
 import client,* as api from '../../api' 
 import {Dispatch} from 'redux'
 

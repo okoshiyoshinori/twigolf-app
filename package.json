@@ -58,6 +58,7 @@
     "@types/react-redux": "^7.1.15",
     "@types/react-router": "^5.1.11",
     "@types/react-router-dom": "^5.1.7",
+    "@types/react-sticky-el": "^1.0.2",
     "@types/redux-thunk": "^2.1.0",
     "axios": "^0.21.1",
     "dayjs": "^1.10.4",
@@ -67,6 +68,8 @@
     "react-redux": "^7.2.2",
     "react-router": "^5.2.0",
     "react-router-dom": "^5.2.0",
+    "react-router-hash-link": "^2.4.3",
+    "react-sticky-el": "^2.0.7",
     "react-twitter-embed": "^3.0.3",
     "redux": "^4.0.5"
   }

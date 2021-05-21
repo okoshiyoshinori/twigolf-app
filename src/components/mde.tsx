@@ -9,9 +9,6 @@ interface Props {
 interface State {}
 
 export default class Mde extends React.Component<Props,State> {
-  constructor(props:Props) {
-    super(props)
-  }
   handleChange(e:string) {
     this.props.handlerProps(e)
   }

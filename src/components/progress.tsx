@@ -6,9 +6,6 @@ interface Props {
 interface State {}
 
 export default class Progress extends React.Component<Props,State> {
-  constructor(props:Props) {
-    super(props)
-  }
   render() {
     return (
       <Grid container alignItems="center" justify="center">

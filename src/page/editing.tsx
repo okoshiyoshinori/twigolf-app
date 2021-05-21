@@ -1,10 +1,9 @@
 import React from 'react'
 import {createStyles,Theme,withStyles,WithStyles} from '@material-ui/core/styles'
 import {withRouter,RouteComponentProps} from 'react-router-dom'
-import {List,ListItem,ListItemText,Button,Dialog,DialogTitle,DialogContent,IconButton,Checkbox,Grid,Chip,Typography,Card,TextField,Paper,InputAdornment} from '@material-ui/core'
-import FormGroup from '@material-ui/core/FormGroup'
+import {List,ListItem,ListItemText,Button,Dialog,DialogTitle,DialogContent,IconButton,Checkbox,Grid,Chip,Typography,TextField,Paper,InputAdornment} from '@material-ui/core'
 import FormControlLabel from '@material-ui/core/FormControlLabel'
-import {colors,Modal} from '@material-ui/core'
+import {colors} from '@material-ui/core'
 import Mde from '../components/mde'
 import PlaceIcon from '@material-ui/icons/Place'
 import CloseIcon from '@material-ui/icons/Close'
@@ -29,9 +28,8 @@ type keyData = {
   word:string
 }
 
-type Element = any
-
 interface State{
+  hikaku:string
   cid:number
   club_keyword:string
   open:boolean
@@ -138,6 +136,7 @@ class New extends React.Component<Props,State>{
   constructor(props:Props) {
     super(props)
     this.state = {
+      hikaku:"",
       cid:0,
       club_keyword:"",
       open:false,
@@ -195,35 +194,36 @@ class New extends React.Component<Props,State>{
   }
   queryParse():number {
     const parse = querystring.parse(this.props.location.search)
-    return parse.cid == undefined ? 0: Number(parse.cid)
+    return parse.cid === undefined ? 0: Number(parse.cid)
   }
   componentWillUnmount() {
     this.props.resetLog()
   }
   componentDidMount() {
     let cid = this.queryParse()
-    if (cid == 0) {
+    if (cid === 0) {
       return
     }
     this.props.getCompetition(cid)
   }
   componentDidUpdate(ProveProps:Props) {
-    if (this.props.competition != ProveProps.competition) {
+    if (this.props.competition !== ProveProps.competition) {
         const {competition} = this.props
-        let cid = this.props.competition.id == undefined ? 0: this.props.competition.id
+        let cid = this.props.competition.id === undefined ? 0: this.props.competition.id
         const {input} = this.state
         let tempKey:keyData[] = [] as keyData[]
         let i:number = 0
         //キーワード
       if (competition.keyword != null) {
         let t = competition.keyword.split(',')
-        t.map((v:string) =>{
+        t.forEach((v:string) =>{
         tempKey.push({key:i,word:v})
         i++
         })
       }
       this.setState({
         cid:cid,
+        hikaku: competition.place_text,
         keywords: tempKey,
         input: {
           ...input,
@@ -242,15 +242,15 @@ class New extends React.Component<Props,State>{
           },
           capacity: {
             ...input.capacity,
-            value: competition.capacity == 0 ? null:competition.capacity,
+            value: competition.capacity === 0 ? null:competition.capacity,
           },
           event_day:{
             ...input.event_day,
-            value: competition.event_day== null ? "":dateFormat(competition.event_day)
+            value: competition.event_day === null ? "":dateFormat(competition.event_day)
           },
           event_deadline:{
             ...input.event_deadline,
-            value: competition.event_deadline == null ? "":dateFormat(competition.event_deadline)
+            value: competition.event_deadline === null ? "":dateFormat(competition.event_deadline)
           }
         }
       })
@@ -260,7 +260,7 @@ class New extends React.Component<Props,State>{
     const {title} = this.state.input
     title.error= false
     title.error_message = ""
-    if (title.value == "" ) {
+    if (title.value === "" ) {
       title.error = true
       title.error_message = "タイトルを入力してください"
     }
@@ -279,7 +279,7 @@ class New extends React.Component<Props,State>{
     const {detail} = this.state.input
     detail.error = false
     detail.error_message = ""
-    if (detail.value == "") {
+    if (detail.value === "") {
       detail.error = true
       detail.error_message = "詳細を入力してください"
     }
@@ -366,16 +366,17 @@ class New extends React.Component<Props,State>{
     })
   }
   handleDelete(data:keyData) {
-    const result = this.state.keywords.filter((d)=> d.word != data.word)
+    const result = this.state.keywords.filter((d)=> d.word !== data.word)
     this.setState({keywords:result})
   }
   check():boolean {
     return this.state.keywords.some((data) => data.word === this.state._word)
   }
   send() {
-   const {input,keywords} = this.state
+   const {input,keywords,hikaku} = this.state
    let temp:string[] = [] as string[]
-   keywords.map((v) => {
+   let club_id : number | null = null
+   keywords.forEach((v) => {
      temp.push(v.word)
    })
    if (temp.length > 0) {
@@ -386,17 +387,25 @@ class New extends React.Component<Props,State>{
    if (!this.checkAll()) {
      return
    }
+   if (input.place.club !== null) {
+     if (hikaku !== input.place.value) {
+       club_id = null
+     } else {
+       club_id = input.place.club
+     }
+   }
+
    let data:PostCompetition = {
      id:this.state.cid,
      title:input.title.value,
      contents:input.detail.value,
-     capacity:input.capacity.value == 0 ? null:input.capacity.value,
-     keyword: input.keyword.value == "" ? null:input.keyword.value,
-     place_text:input.place.value == "" ? null: input.place.value,
-     club_id:input.place.club == 0 ? null:input.place.club,
+     capacity:input.capacity.value === 0 ? null:input.capacity.value,
+     keyword: input.keyword.value === "" ? null:input.keyword.value,
+     place_text:input.place.value === "" ? null: input.place.value,
+     club_id:club_id,
      status:1,
-     event_day:input.event_day.value == "" ? null: new Date(input.event_day.value),
-     event_deadline:input.event_deadline.value == "" ? null:new Date(input.event_deadline.value),
+     event_day:input.event_day.value === "" ? null: new Date(input.event_day.value),
+     event_deadline:input.event_deadline.value === "" ? null:new Date(input.event_deadline.value),
      user_id:this.props.session.auth.id,
      twitter:input.twitter.value
    }
@@ -423,21 +432,23 @@ class New extends React.Component<Props,State>{
   }
   handleSelect(data:Club){
     const {input}  = this.state
+    let placeStr:string = data.name + "　" + data.address
     this.setState({
       open:false,
+      hikaku:placeStr,
       input:{
         ...input,
         place: {
           ...input.place,
           club: data.id,
-          value: data.name + " " + data.address
+          value: placeStr 
         }
       }
     })
     this.props.resetLog()
   }
   render(){
-    const {classes,system,clubs,competition,getClubs} = this.props
+    const {classes,system,clubs,getClubs} = this.props
     const {keywords,input,cid} = this.state
     const clubsRsult = SearchLog(system.result,"clubs")
     if (system.loading.competition ) {
@@ -447,15 +458,15 @@ class New extends React.Component<Props,State>{
      <Grid container spacing={3}> 
       <div className="New">
         <Helmet>
-         <title>{cid == 0 ? "イベント作成":"イベント編集"}</title>
+         <title>{cid === 0 ? "イベント作成":"イベント編集"}</title>
         </Helmet>
       </div>
       <Grid item xs={12} sm={12}>
         <Typography variant="h1">
-        { cid == 0 && 
+        { cid === 0 && 
          <span> イベントを作成する</span>
         }
-        { cid != 0 &&
+        { cid !== 0 &&
          <span> イベントを編集する</span>
          }
          </Typography>
@@ -515,7 +526,7 @@ class New extends React.Component<Props,State>{
               }}
               onChange={(e)=>this.setState({_word:e.target.value})}
               onBlur={e => {
-                if (!this.check() && this.state._word != "") {
+                if (!this.check() && this.state._word !== "") {
                     keywords.push({key:0,word:this.state._word})
                     this.setState({_word:''})
                 }
@@ -655,9 +666,9 @@ class New extends React.Component<Props,State>{
            </Grid>
            <Grid item xs={12} sm={12}>
             <Button disableElevation onClick={()=>this.send()}size="medium" style={{color:"#fff",fontWeight:700}} variant="contained" color="primary">
-            {cid == 0 ? "登録する":"更新する"}
+            {cid === 0 ? "登録する":"更新する"}
             </Button>
-            {cid != 0 && 
+            {cid !== 0 && 
             <Button disableElevation onClick={()=>this.delete(Number(cid))}size="medium" style={{color:"#fff",fontWeight:700,marginLeft:15}} variant="contained" color="secondary">
               削除する 
             </Button>
@@ -688,30 +699,30 @@ class New extends React.Component<Props,State>{
               this.setState({club_keyword:e.target.value})
             }}
             onKeyDown={(e) => {
-              if (e.keyCode == 13) {
-                if (this.state.club_keyword != "") {
+              if (e.keyCode === 13) {
+                if (this.state.club_keyword !== "") {
                   (e.target as HTMLElement).blur()
                 }
               }
             }}
             onBlur={(e) => {
-              if (this.state.club_keyword != "") {
+              if (this.state.club_keyword !== "") {
                 getClubs(this.state.club_keyword)
               }
             }}
             fullWidth
           />
          {system.loading.clubs && <Progress/>} 
-         {clubsRsult.status != 200 && clubsRsult.status != 999 && <Message mes={clubsRsult.cause}/>}
-         {clubsRsult.status == 200 && !system.loading.clubs &&
+         {clubsRsult.status !== 200 && clubsRsult.status !== 999 && <Message mes={clubsRsult.cause}/>}
+         {clubsRsult.status === 200 && !system.loading.clubs &&
            <List>
             {
               clubs.map((val) => (
                 <ListItem key={val.id} divider  button alignItems="flex-start">
                 <ListItemText style={{padding:20}} onClick={() => this.handleSelect(val)}
                   primary={
-                    <Typography variant="h3">
-                    {val.name + "  " + val.address}
+                    <Typography variant="h4">
+                    {val.name + "　" + val.address}
                     </Typography>
                   }
                  />
